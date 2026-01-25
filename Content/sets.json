@@ -1,0 +1,214 @@
+{
+  "categories": [
+    {
+      "id": "animals",
+      "title": "Animals",
+      "subcategories": [
+        {
+          "id": "farm",
+          "title": "Farm",
+          "items": [
+            {
+              "id": "duck",
+              "name": "Duck",
+              "image": "duck.svg",
+              "sound": "duck_quack.mp3"
+            },
+            {
+              "id": "cow",
+              "name": "Cow",
+              "image": "cow.svg",
+              "sound": "cow_moo.mp3"
+            },
+            {
+              "id": "pig",
+              "name": "Pig",
+              "image": "pig.svg",
+              "sound": "pig_oink.mp3"
+            },
+            {
+              "id": "sheep",
+              "name": "Sheep",
+              "image": "sheep.svg",
+              "sound": "sheep_baa.mp3"
+            }
+          ]
+        },
+        {
+          "id": "pets",
+          "title": "Pets",
+          "items": [
+            {
+              "id": "dog",
+              "name": "Dog",
+              "image": "dog.svg",
+              "sound": "dog_bark.mp3"
+            },
+            {
+              "id": "cat",
+              "name": "Cat",
+              "image": "cat.svg",
+              "sound": "cat_meow.mp3"
+            },
+            {
+              "id": "rabbit",
+              "name": "Rabbit",
+              "image": "rabbit.svg",
+              "sound": "rabbit_sniff.mp3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vehicles",
+      "title": "Vehicles",
+      "subcategories": [
+        {
+          "id": "road",
+          "title": "Road",
+          "items": [
+            {
+              "id": "car",
+              "name": "Car",
+              "image": "car.svg",
+              "sound": "car_beep.mp3"
+            },
+            {
+              "id": "bus",
+              "name": "Bus",
+              "image": "bus.svg",
+              "sound": "bus_honk.mp3"
+            },
+            {
+              "id": "tractor",
+              "name": "Tractor",
+              "image": "tractor.svg",
+              "sound": "tractor_rumble.mp3"
+            }
+          ]
+        },
+        {
+          "id": "emergency",
+          "title": "Emergency",
+          "items": [
+            {
+              "id": "ambulance",
+              "name": "Ambulance",
+              "image": "ambulance.svg",
+              "sound": "siren_ambulance.mp3"
+            },
+            {
+              "id": "police",
+              "name": "Police Car",
+              "image": "police_car.svg",
+              "sound": "siren_police.mp3"
+            },
+            {
+              "id": "fire",
+              "name": "Fire Engine",
+              "image": "fire_engine.svg",
+              "sound": "siren_fire.mp3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "objects",
+      "title": "Objects",
+      "subcategories": [
+        {
+          "id": "toys",
+          "title": "Toys",
+          "items": [
+            {
+              "id": "ball",
+              "name": "Ball",
+              "image": "ball.svg",
+              "sound": "boing.mp3"
+            },
+            {
+              "id": "teddy",
+              "name": "Teddy",
+              "image": "teddy.svg",
+              "sound": "hug.mp3"
+            },
+            {
+              "id": "blocks",
+              "name": "Blocks",
+              "image": "blocks.svg",
+              "sound": "clack.mp3"
+            }
+          ]
+        },
+        {
+          "id": "food",
+          "title": "Food",
+          "items": [
+            {
+              "id": "apple",
+              "name": "Apple",
+              "image": "apple.svg",
+              "sound": "bite.mp3"
+            },
+            {
+              "id": "banana",
+              "name": "Banana",
+              "image": "banana.svg",
+              "sound": "peel_pop.mp3"
+            },
+            {
+              "id": "pizza",
+              "name": "Pizza",
+              "image": "pizza.svg",
+              "sound": "ding.mp3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "numbers",
+      "title": "Numbers",
+      "subcategories": [
+        {
+          "id": "one_to_ten",
+          "title": "One to Ten",
+          "items": [
+            {
+              "id": "n1",
+              "name": "One",
+              "image": "num_1.svg",
+              "sound": null
+            },
+            {
+              "id": "n2",
+              "name": "Two",
+              "image": "num_2.svg",
+              "sound": null
+            },
+            {
+              "id": "n3",
+              "name": "Three",
+              "image": "num_3.svg",
+              "sound": null
+            },
+            {
+              "id": "n4",
+              "name": "Four",
+              "image": "num_4.svg",
+              "sound": null
+            },
+            {
+              "id": "n5",
+              "name": "Five",
+              "image": "num_5.svg",
+              "sound": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
