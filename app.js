@@ -18,15 +18,33 @@ const ctx = confettiCanvas.getContext("2d");
 // ---- Speech ----
 function speak(text){
   if (!("speechSynthesis" in window)) return;
+
   try{
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
+
     const voices = window.speechSynthesis.getVoices?.() || [];
-    const v = voices.find(x=>/en-GB/i.test(x.lang)) || voices.find(x=>/en/i.test(x.lang));
-    if (v) u.voice = v;
-    u.rate = 0.9;
-    u.pitch = 1.15;
+
+    // Prefer female, UK English, soft voices
+    let voice =
+      voices.find(v =>
+        /en-GB/i.test(v.lang) &&
+        /female|woman|samantha|serena|victoria|kate/i.test(v.name)
+      ) ||
+      voices.find(v =>
+        /en/i.test(v.lang) &&
+        /female|woman|samantha|serena|victoria|kate/i.test(v.name)
+      ) ||
+      voices.find(v => /en-GB/i.test(v.lang)) ||
+      voices.find(v => /en/i.test(v.lang));
+
+    if (voice) u.voice = voice;
+
+    // Toddler-friendly delivery
+    u.rate = 0.75;     // slower
+    u.pitch = 1.3;     // warmer / cheerful
     u.volume = 1.0;
+
     window.speechSynthesis.speak(u);
   }catch{}
 }
