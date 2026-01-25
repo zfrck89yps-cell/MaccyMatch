@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffcc66" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Maccy Match" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Maccy Match</title>
+</head>
+<body>
+  <header class="topbar">
+    <button id="backBtn" class="icon-btn" aria-label="Back" hidden>‹</button>
+    <div class="title" id="title">Maccy Match</div>
+    <div class="spacer"></div>
+  </header>
+
+  <main id="main" class="main"></main>
+
+  <div id="overlayWord" class="overlay" hidden>
+    <div class="overlay-card"><div id="overlayWordText" class="overlay-text">Duck</div></div>
+  </div>
+
+  <div id="overlayBig" class="overlay" hidden>
+    <div class="overlay-card overlay-big"><img id="overlayBigImg" alt="" /></div>
+  </div>
+
+  <div id="overlayDone" class="overlay" hidden>
+    <div class="overlay-card overlay-done">
+      <div class="done-title">All done!</div>
+      <div class="done-actions">
+        <button id="againBtn" class="pill">Again</button>
+        <button id="nextBtn" class="pill pill-secondary">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

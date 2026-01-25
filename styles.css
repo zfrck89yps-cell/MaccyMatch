@@ -1,0 +1,66 @@
+:root{ --card: rgba(255,255,255,.88); --stroke: rgba(255,255,255,.55); --text:#1b1b1b; }
+*{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+html,body{ height:100%; margin:0; font-family: ui-rounded, system-ui, -apple-system, "SF Pro Rounded", Arial, sans-serif; color:var(--text); }
+body{
+  background: radial-gradient(circle at 20% 10%, #ffe0a3, transparent 55%),
+              radial-gradient(circle at 90% 0%, #fff4d6, transparent 55%),
+              radial-gradient(circle at 40% 90%, #d9fff0, transparent 55%),
+              linear-gradient(135deg, #fff1c7, #dff9ff);
+  overflow:hidden;
+}
+.topbar{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; padding-top: calc(12px + env(safe-area-inset-top)); }
+.title{ font-weight:1000; font-size:28px; }
+.spacer{ width:48px; height:48px; }
+.icon-btn{ width:48px; height:48px; border:none; border-radius:16px; background:var(--card); box-shadow:0 10px 25px rgba(0,0,0,.08); font-size:22px; font-weight:900; }
+.main{ height: calc(100% - 80px); overflow:auto; padding:8px 16px 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+
+.grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; }
+@media (max-width: 430px){ .grid{ grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } .title{ font-size:24px; } }
+
+.big-btn{ display:flex; align-items:center; justify-content:center; height:150px; border-radius:26px;
+  background:var(--card); border:2px solid var(--stroke); box-shadow:0 14px 30px rgba(0,0,0,.08);
+  font-size:44px; font-weight:1000; user-select:none; touch-action: manipulation;
+}
+.big-btn .emoji{ margin-right:12px; font-size:54px; }
+
+.list{ display:flex; flex-direction:column; gap:14px; }
+.subcard{ background:var(--card); border:2px solid var(--stroke); border-radius:22px; padding:16px; box-shadow:0 14px 30px rgba(0,0,0,.08); }
+.subcard-title{ font-size:28px; font-weight:1000; margin-bottom:10px; }
+.diff-row{ display:flex; flex-wrap:wrap; gap:12px; }
+
+.pill{ border:none; border-radius:999px; padding:12px 18px; font-size:20px; font-weight:1000;
+  background:var(--card); border:2px solid var(--stroke); box-shadow:0 10px 25px rgba(0,0,0,.08);
+  touch-action: manipulation;
+}
+.pill-secondary{ background:rgba(255,255,255,.72); }
+
+.game-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:16px; }
+@media (max-width: 430px){ .game-grid{ grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); } }
+
+.card{ position:relative; height:190px; border-radius:22px; background:var(--card); border:2px solid var(--stroke);
+  box-shadow:0 14px 30px rgba(0,0,0,.08); display:flex; align-items:center; justify-content:center; overflow:hidden;
+  user-select:none; touch-action: manipulation;
+}
+.card.selected{ outline:4px solid rgba(255,255,255,.9); }
+.card img{ width:78%; height:78%; object-fit:contain; pointer-events:none; }
+.tick{ position:absolute; right:10px; top:10px; width:52px; height:52px; border-radius:999px;
+  background: rgba(33,192,91,.95); color:white; font-weight:1000; font-size:34px;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 10px 25px rgba(0,0,0,.14);
+  pointer-events:none;
+}
+.bottom-actions{ display:flex; gap:12px; padding:14px 4px 0; }
+
+.overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.22); z-index:50; pointer-events:auto;
+}
+.overlay[hidden]{ display:none !important; }
+.overlay-card{ background:rgba(255,255,255,.90); border:2px solid rgba(255,255,255,.55); border-radius:28px;
+  padding:24px 26px; box-shadow:0 18px 45px rgba(0,0,0,.16); pointer-events:auto;
+}
+.overlay-text{ font-size:90px; font-weight:1000; text-align:center; min-width:min(80vw, 700px); }
+@media (max-width: 430px){ .overlay-text{ font-size:64px; } }
+.overlay-big img{ width:min(70vw, 420px); height:min(70vw, 420px); object-fit:contain; }
+.overlay-done .done-title{ font-size:64px; font-weight:1000; text-align:center; }
+.done-actions{ display:flex; gap:14px; justify-content:center; margin-top:16px; }
+
+.confetti{ position:fixed; inset:0; pointer-events:none; z-index:60; }
