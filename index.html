@@ -90,28 +90,39 @@
 
     /* category layout */
     .menuWrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding-top: 25vh; /* ~¼ down screen */
-    }
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 
-    .grid {
-      width: min(1100px, 92vw);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 22px;
-    }
+  /* This is the key: pushes the category cards down under the baked title */
+  padding: 20vh 48px 80px;  /* ~1/5 down */
+}
 
-    .catBtn {
-      border: none;
-      padding: 0;
-      background: none;
-      border-radius: 18px;
-      cursor: pointer;
-    }
+/* 6 equal cards: 3 columns x 2 rows */
+.grid {
+  width: min(1200px, 92vw);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+/* Make every category card the same size */
+.cardBtn.catCard {
+  height: clamp(140px, 18vh, 220px);
+  padding: 0;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+/* Image fills the whole card */
+.catImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
     .catBtn img {
       width: 100%;
@@ -129,6 +140,44 @@
       opacity: 0.45;
       cursor: default;
     }
+
+    /* When you're in the game, put the board lower too */
+#app.game {
+  background-image: url("./Assets/Game-background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.gameWrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  padding: 20vh 48px 80px; /* same: 1/5 down */
+}
+
+.board {
+  width: min(1200px, 92vw);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+/* makes the 6 cards equal size on the board */
+.tile {
+  height: clamp(180px, 24vh, 300px);
+  border-radius: 22px;
+  overflow: hidden;
+}
+.tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
     /* difficulty */
     .difficulty {
