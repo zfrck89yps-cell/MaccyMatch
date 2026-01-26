@@ -3,8 +3,6 @@ let started = false;
 function renderMenu() {
   const app = document.getElementById("app");
   app.className = "menu";
-
-  // NOTE: NO extra titles here (your background already has them)
   app.innerHTML = `
     <div class="menuWrap">
       <div class="grid">
@@ -29,24 +27,16 @@ function renderMenu() {
     </div>
   `;
 
-  // category click (placeholder for now)
   app.querySelectorAll(".cardBtn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const cat = btn.getAttribute("data-cat");
-      console.log("Category:", cat);
-      // TODO: route to game screen
-      alert(`Category: ${cat}`);
-    });
+    btn.addEventListener("click", () => alert(`Category: ${btn.dataset.cat}`));
   });
 
-  // difficulty
   const saved = localStorage.getItem("mm_difficulty") || "easy";
   setDifficulty(saved);
-
   app.querySelectorAll(".dot").forEach(dot => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
-      setDifficulty(dot.getAttribute("data-level"));
+      setDifficulty(dot.dataset.level);
     });
   });
 }
@@ -54,14 +44,13 @@ function renderMenu() {
 function setDifficulty(level) {
   localStorage.setItem("mm_difficulty", level);
   document.querySelectorAll(".dot").forEach(d => {
-    d.classList.toggle("active", d.getAttribute("data-level") === level);
+    d.classList.toggle("active", d.dataset.level === level);
   });
 }
 
 function showApp() {
   const app = document.getElementById("app");
   app.style.display = "block";
-  renderMenu();
 }
 
 function hideSplash() {
@@ -72,62 +61,78 @@ function hideSplash() {
 }
 
 window.addEventListener("load", () => {
+  // Always render menu BEHIND the splash immediately (prevents “black screen”)
+  renderMenu();
+  showApp();
+
   const splash = document.getElementById("splash");
   const tapText = document.getElementById("tapText");
   const img = document.getElementById("splashImg");
   const video = document.getElementById("splashVideo");
 
-  // Ensure splash image is visible immediately
+  // Start state: image visible, video hidden
   img.style.display = "block";
   video.style.display = "none";
+  tapText.style.display = "block";
 
   const start = async () => {
     if (started) return;
     started = true;
 
-    tapText.style.display = "none";
+    // keep PNG showing until video is ACTUALLY playing
+    tapText.textContent = "Loading…";
+    tapText.style.display = "block";
 
-    // Show video above the image
-    video.style.display = "block";
+    // make sure we have the right file + bust cache
+    video.src = "./Assets/Splash.mp4?v=" + Date.now();
     video.currentTime = 0;
-    video.muted = false;   // allow sound (user gesture)
+    video.muted = false;
     video.volume = 1.0;
 
-    // If iOS still blocks unmuted, we’ll fall back but keep video playing
-    try {
-      await video.play();
-    } catch (err) {
-      // try muted fallback so at least video plays
-      try {
-        video.muted = true;
-        await video.play();
-        // optional: show hint if you want
-        // tapText.textContent = "Tap for sound";
-        // tapText.style.display = "block";
-      } catch (err2) {
-        // if even muted fails, just go to menu
-        hideSplash();
-        showApp();
-        return;
-      }
-    }
-
-    // When video ends, go to menu
+    let endedAlready = false;
     const endSplash = () => {
+      if (endedAlready) return;
+      endedAlready = true;
       hideSplash();
-      showApp();
     };
 
     video.addEventListener("ended", endSplash, { once: true });
 
-    // safety timeout based on duration (prevents cut off / too-early hide)
-    const safetyMs = Number.isFinite(video.duration) && video.duration > 0
-      ? Math.ceil(video.duration * 1000) + 300
-      : 4000;
+    // If the video fails, don’t go black—just hide splash and show menu
+    const failToMenu = () => {
+      // keep menu showing, just remove splash
+      endSplash();
+    };
 
-    setTimeout(endSplash, safetyMs);
+    // Only swap from PNG -> video when frames are rendering
+    const onPlaying = () => {
+      tapText.style.display = "none";
+      video.style.display = "block";
+      img.style.display = "none";
+      // safety timeout based on duration (prevents cutting it off early)
+      const ms = (Number.isFinite(video.duration) && video.duration > 0)
+        ? Math.ceil(video.duration * 1000) + 400
+        : 4500;
+      setTimeout(endSplash, ms);
+    };
+
+    video.addEventListener("playing", onPlaying, { once: true });
+    video.addEventListener("error", failToMenu, { once: true });
+
+    try {
+      await video.play();
+    } catch (e) {
+      // iOS sometimes blocks unmuted; try muted
+      try {
+        video.muted = true;
+        await video.play();
+        // if muted, still wait for "playing" before swapping
+      } catch (e2) {
+        failToMenu();
+      }
+    }
   };
 
-  // Use pointerup for iPad Safari reliability
-  splash.addEventListener("pointerup", start, { once: true });
+  // pointerup works best on iPad Safari
+  splash.addEventListener("pointerup", start);
 });
