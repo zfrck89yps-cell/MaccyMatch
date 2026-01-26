@@ -1,7 +1,7 @@
 {
   "name": "Maccy Match",
   "short_name": "Maccy Match",
-  "start_url": "./",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#fff4d6",
   "theme_color": "#ffcc66",
