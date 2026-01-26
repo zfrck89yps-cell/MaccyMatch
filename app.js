@@ -8,7 +8,7 @@ function renderMenu() {
   app.innerHTML = `
     <div class="menuWrap">
       <!-- Grid starts lower because the title is baked into Menu-background.png -->
-      <div class="grid" style="margin-top:22vh;">
+      <div class="grid">
         
         <!-- Animals category uses your image card -->
         <button class="cardBtn catCard" id="catAnimals" aria-label="Animals">
