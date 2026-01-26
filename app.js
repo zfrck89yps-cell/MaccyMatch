@@ -1,5 +1,5 @@
-let started = false;
-
+// Improved startup flow: keep PNG until video is actually playing, robust fallbacks,
+// and remove duplicate menu headers (Menu-background contains the title).
 function renderMenu() {
   const app = document.getElementById("app");
   app.className = "menu";
@@ -61,7 +61,7 @@ function hideSplash() {
 }
 
 window.addEventListener("load", () => {
-  // Always render menu BEHIND the splash immediately (prevents “black screen”)
+  // Render menu behind splash immediately so you never get a black screen when splash is removed
   renderMenu();
   showApp();
 
@@ -70,20 +70,28 @@ window.addEventListener("load", () => {
   const img = document.getElementById("splashImg");
   const video = document.getElementById("splashVideo");
 
+  if (!splash || !video || !img) {
+    // If splash elements missing, just run menu
+    return;
+  }
+
   // Start state: image visible, video hidden
   img.style.display = "block";
+  img.style.opacity = "1";
   video.style.display = "none";
   tapText.style.display = "block";
+
+  let started = false;
 
   const start = async () => {
     if (started) return;
     started = true;
 
-    // keep PNG showing until video is ACTUALLY playing
+    // Keep the PNG visible until the video is actually rendering frames
     tapText.textContent = "Loading…";
     tapText.style.display = "block";
 
-    // make sure we have the right file + bust cache
+    // Ensure the MP4 path matches EXACTLY your repo and bust cache after deploys
     video.src = "./Assets/Splash.mp4?v=" + Date.now();
     video.currentTime = 0;
     video.muted = false;
@@ -100,7 +108,6 @@ window.addEventListener("load", () => {
 
     // If the video fails, don’t go black—just hide splash and show menu
     const failToMenu = () => {
-      // keep menu showing, just remove splash
       endSplash();
     };
 
@@ -109,7 +116,8 @@ window.addEventListener("load", () => {
       tapText.style.display = "none";
       video.style.display = "block";
       img.style.display = "none";
-      // safety timeout based on duration (prevents cutting it off early)
+
+      // use video.duration when available; safety buffer
       const ms = (Number.isFinite(video.duration) && video.duration > 0)
         ? Math.ceil(video.duration * 1000) + 400
         : 4500;
@@ -122,12 +130,13 @@ window.addEventListener("load", () => {
     try {
       await video.play();
     } catch (e) {
-      // iOS sometimes blocks unmuted; try muted
+      // Unmuted play was blocked in some browsers; try muted fallback
       try {
         video.muted = true;
         await video.play();
-        // if muted, still wait for "playing" before swapping
+        // still wait for "playing" before swapping images
       } catch (e2) {
+        // If video can’t play at all, don’t block the app
         failToMenu();
       }
     }
@@ -135,4 +144,6 @@ window.addEventListener("load", () => {
 
   // pointerup works best on iPad Safari
   splash.addEventListener("pointerup", start);
+  // fallback
+  splash.addEventListener("touchend", start);
 });
