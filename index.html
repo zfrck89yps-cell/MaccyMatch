@@ -1,40 +1,41 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Maccy Match</title>
 
-  <!-- PWA manifest (cache-bust to force iOS to reload) -->
+  <!-- PWA Manifest -->
   <link rel="manifest" href="/MaccyMatch/manifest.webmanifest?v=1">
 
-  <!-- iOS Home Screen icon (iOS uses THIS) -->
-  <link rel="apple-touch-icon" href="/MaccyMatch/assets/icon-512.png?v=1">
+  <!-- iOS App Icon -->
+  <link rel="apple-touch-icon" href="/MaccyMatch/Assets/apple-touch-icon.png?v=1">
 
-  <!-- iOS PWA mode -->
+  <!-- iOS PWA settings -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Maccy Match">
 
-  <meta name="theme-color" content="#FFD66B">
+  <!-- Theme colour -->
+  <meta name="theme-color" content="#FFD84D">
+
+  <!-- Optional: stop zooming (good for toddlers) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
   <style>
-    html, body { margin:0; height:100%; background:#FFD66B; overflow:hidden; }
-    #app { height:100%; display:flex; align-items:center; justify-content:center;
-           font-family:-apple-system, system-ui, Segoe UI, Roboto, sans-serif; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #FFF4CC;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
   </style>
 </head>
 
 <body>
-  <div id="app">Maccy Match</div>
+  <div id="app"></div>
 
-  <script>
-    // NOTE: iOS Safari Private Browsing often breaks service workers.
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/MaccyMatch/sw.js?v=1").catch(console.error);
-      });
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
