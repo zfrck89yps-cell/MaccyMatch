@@ -2,10 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-  />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
   <!-- iOS Home Screen icon -->
   <link rel="apple-touch-icon" href="Assets/apple-touch-icon.png">
@@ -16,12 +14,9 @@
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
       overflow: hidden;
       background: #000;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -36,13 +31,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      opacity: 1;
       transition: opacity 350ms ease;
       touch-action: manipulation;
     }
     #splash.hidden { opacity: 0; pointer-events: none; }
 
-    #splashImg,
-    #splashVideo {
+    #splashImg, #splashVideo {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -50,7 +45,7 @@
       object-fit: cover;
       background: #000;
     }
-
+    #splashImg { pointer-events: none; user-select: none; -webkit-user-drag: none; }
     #splashVideo { display: none; }
 
     #tapText {
@@ -64,23 +59,26 @@
       border-radius: 999px;
       text-shadow: 0 3px 0 #C97A00, 0 10px 18px rgba(0,0,0,0.35);
       animation: pulse 1.6s ease-in-out infinite;
+      user-select: none;
       pointer-events: none;
     }
-
     @keyframes pulse {
       0% { transform: scale(1); opacity: .85; }
       50% { transform: scale(1.08); opacity: 1; }
       100% { transform: scale(1); opacity: .85; }
     }
 
-    /* ---------- APP / MENU ---------- */
+    /* ---------- APP ROOT ---------- */
     #app {
       width: 100%;
       height: 100%;
       display: none;
       position: relative;
+      background: #000;
+      overflow: hidden;
     }
 
+    /* Menu background */
     #app.menu {
       background-image: url("./Assets/Menu-background.png");
       background-size: cover;
@@ -88,98 +86,82 @@
       background-repeat: no-repeat;
     }
 
-    /* category layout */
+    /* Game background */
+    #app.game {
+      background-image: url("./Assets/Game-background.png");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    /* ---------- MENU LAYOUT ---------- */
     .menuWrap {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 0 48px 80px;
+    }
 
-  /* This is the key: pushes the category cards down under the baked title */
-  padding: 20vh 48px 80px;  /* ~1/5 down */
-}
+    /* EXACTLY 6 equal cards (3x2) */
+    .menuGrid {
+      width: min(1200px, 94vw);
+      margin-top: 22vh;   /* clears baked title */
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 22px;
+    }
 
-/* 6 equal cards: 3 columns x 2 rows */
-.grid {
-  width: min(1200px, 92vw);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-}
+    .catCard {
+      border: none;
+      border-radius: 22px;
+      padding: 0;
+      overflow: hidden;
+      cursor: pointer;
+      background: rgba(255,255,255,0.65);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+      aspect-ratio: 16 / 9; /* keeps all six the same */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .catCard:active { transform: scale(0.99); }
 
-/* Make every category card the same size */
-.cardBtn.catCard {
-  height: clamp(140px, 18vh, 220px);
-  padding: 0;
-  border-radius: 18px;
-  overflow: hidden;
-}
-
-/* Image fills the whole card */
-.catImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-    .catBtn img {
+    .catImg {
       width: 100%;
-      height: auto;
-      border-radius: 18px;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+      height: 100%;
+      object-fit: cover;
       display: block;
     }
 
-    .catBtn:active img {
-      transform: scale(0.98);
+    .placeholderText{
+      font-weight: 900;
+      font-size: 26px;
+      color: rgba(0,0,0,0.55);
+      text-shadow: 0 2px 0 rgba(255,255,255,0.5);
+    }
+    .catCard[disabled] {
+      opacity: 0.85;
+      cursor: not-allowed;
     }
 
-    .placeholder {
-      opacity: 0.45;
-      cursor: default;
+    /* scroll hint bottom-left */
+    .scrollHint {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.9);
+      font-size: 22px;
+      font-weight: 800;
+      user-select: none;
     }
 
-    /* When you're in the game, put the board lower too */
-#app.game {
-  background-image: url("./Assets/Game-background.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.gameWrap {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-
-  padding: 20vh 48px 80px; /* same: 1/5 down */
-}
-
-.board {
-  width: min(1200px, 92vw);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-}
-
-/* makes the 6 cards equal size on the board */
-.tile {
-  height: clamp(180px, 24vh, 300px);
-  border-radius: 22px;
-  overflow: hidden;
-}
-.tile img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-    /* difficulty */
+    /* difficulty bottom-right */
     .difficulty {
       position: absolute;
       right: 18px;
@@ -190,73 +172,160 @@
       box-shadow: 0 10px 24px rgba(0,0,0,0.18);
       display: grid;
       gap: 8px;
+      user-select: none;
+      z-index: 5;
     }
-
     .difficultyTitle {
       font-weight: 900;
       font-size: 16px;
+      opacity: .9;
       text-align: center;
     }
-
-    .dots {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-
+    .dots { display: flex; gap: 10px; justify-content: center; }
     .dot {
       width: 16px;
       height: 16px;
       border-radius: 999px;
-      border: 3px solid #fff;
-      opacity: 0.5;
+      border: 3px solid rgba(255,255,255,0.9);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       cursor: pointer;
+      opacity: 0.55;
     }
-
-    .dot.active { opacity: 1; }
-
+    .dot.active { opacity: 1; transform: scale(1.05); }
     .g { background: #35d05a; }
     .y { background: #ffd84d; }
     .r { background: #ff4d4d; }
+
+    /* ---------- GAME LAYOUT ---------- */
+    .gameWrap{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding: 0 48px 80px;
+    }
+
+    .gameGrid{
+      width: min(1200px, 94vw);
+      margin-top: 22vh; /* clears baked title */
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 22px;
+    }
+
+    .card {
+      border: 6px solid rgba(255,255,255,0.95); /* white border (scripted) */
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.25);
+      background: rgba(255,255,255,0.15);
+      aspect-ratio: 1 / 1; /* matches your animal art better */
+      cursor: pointer;
+      position: relative;
+      transform: translateZ(0);
+      transition: transform 180ms ease, filter 180ms ease;
+    }
+    .card:active { transform: scale(0.99); }
+    .card.matched { filter: brightness(1.05) saturate(1.05); }
+    .card.disabled { pointer-events:none; opacity: 0.9; }
+
+    .card img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    /* Smash animation helper */
+    .smashOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      pointer-events: none;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .smashOverlay.show { display:flex; }
+    .smashPair {
+      display:flex;
+      gap: 24px;
+      align-items:center;
+      justify-content:center;
+    }
+    .smashImg {
+      width: min(34vw, 420px);
+      aspect-ratio: 1 / 1;
+      border-radius: 28px;
+      overflow:hidden;
+      border: 10px solid rgba(255,255,255,0.95);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      transform: scale(0.7);
+      opacity: 0;
+      animation: popIn 220ms ease forwards;
+    }
+    @keyframes popIn {
+      to { transform: scale(1); opacity: 1; }
+    }
+    .smashImg img { width:100%; height:100%; object-fit:cover; display:block; }
+
+    /* Confetti canvas */
+    #confetti {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    /* Win overlay */
+    .winOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 9997;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+    }
+    .winOverlay.show{ display:flex; }
+    .winText{
+      padding: 20px 34px;
+      border-radius: 24px;
+      font-size: clamp(44px, 6vw, 86px);
+      font-weight: 1000;
+      color: #FFD84D;
+      background: rgba(0,0,0,0.28);
+      text-shadow: 0 4px 0 #C97A00, 0 14px 26px rgba(0,0,0,0.35);
+    }
   </style>
 </head>
 
 <body>
   <!-- Splash -->
-  <div id="splash">
-    <img id="splashImg" src="./Assets/Splash.PNG" alt="Maccy Match">
-    <video id="splashVideo" playsinline webkit-playsinline preload="auto"></video>
+  <div id="splash" role="button" aria-label="Tap to start">
+    <img id="splashImg" src="./Assets/Splash.PNG?v=1" alt="Maccy Match">
+    <video id="splashVideo"
+           playsinline
+           webkit-playsinline
+           preload="auto"
+           src="./Assets/Splash.mp4?v=1"></video>
     <div id="tapText">Tap to Start</div>
   </div>
 
   <!-- App -->
-  <div id="app" class="menu">
-    <div class="menuWrap">
-      <div class="grid">
-        <!-- Animals (live) -->
-        <button class="catBtn" id="animalsBtn">
-          <img src="./Assets/Animals.PNG" alt="Animals">
-        </button>
+  <div id="app"></div>
 
-        <!-- Placeholders -->
-        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
-        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
-        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
-        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
-        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
-      </div>
-    </div>
-
-    <div class="difficulty">
-      <div class="difficultyTitle">Difficulty</div>
-      <div class="dots">
-        <div class="dot g" data-level="easy"></div>
-        <div class="dot y" data-level="medium"></div>
-        <div class="dot r" data-level="hard"></div>
-      </div>
-    </div>
+  <!-- smash + confetti layers -->
+  <div class="smashOverlay" id="smashOverlay">
+    <div class="smashPair" id="smashPair"></div>
   </div>
+  <div class="winOverlay" id="winOverlay">
+    <div class="winText">Well done!</div>
+  </div>
+  <canvas id="confetti"></canvas>
 
-  <script src="./app.js?v=2"></script>
+  <script src="./app.js?v=1"></script>
 </body>
 </html>
