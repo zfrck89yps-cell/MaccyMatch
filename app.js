@@ -1,44 +1,76 @@
-function startApp() {
+function renderMenu() {
   const app = document.getElementById("app");
 
-  // Temporary home screen so we never see a blank/yellow screen
+  // Placeholder menu (replace later)
   app.innerHTML = `
     <div style="
-      width:100%;
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction:column;
-      text-align:center;
-      padding:24px;
-      box-sizing:border-box;
-      font-family:system-ui;
+      font-size: 42px;
+      font-weight: 700;
+      text-align: center;
     ">
-      <h1 style="margin:0;font-size:3rem;">Maccy Match</h1>
-      <p style="margin-top:12px;font-size:1.2rem;">
-        Tap a category
-      </p>
+      Main Menu
     </div>
   `;
 }
 
-function hideSplash() {
+function fadeOutSplash() {
   const splash = document.getElementById("splash");
   if (!splash) return;
 
+  splash.style.transition = "opacity 350ms ease";
   splash.style.opacity = "0";
-  splash.style.transition = "opacity 300ms ease";
 
   setTimeout(() => {
     splash.remove();
-  }, 350);
+  }, 380);
 }
 
 window.addEventListener("load", () => {
-  // Start app immediately behind splash
-  startApp();
+  renderMenu();
 
-  // Hide splash after 3 seconds (matches your video)
-  setTimeout(hideSplash, 3000);
+  const idleVideo = document.getElementById("idleVideo");
+  const splashVideo = document.getElementById("splashVideo");
+  const tapOverlay = document.getElementById("tapOverlay");
+
+  const startSplash = async () => {
+    // Prevent double taps
+    tapOverlay.remove();
+
+    // Stop idle loop
+    try {
+      idleVideo.pause();
+    } catch (e) {}
+
+    idleVideo.style.opacity = "0";
+
+    // Show splash video
+    splashVideo.style.transition = "opacity 120ms ease";
+    splashVideo.style.opacity = "1";
+
+    try {
+      splashVideo.currentTime = 0;
+      splashVideo.muted = false; // allowed due to user tap
+      await splashVideo.play();
+
+      splashVideo.addEventListener(
+        "ended",
+        fadeOutSplash,
+        { once: true }
+      );
+
+      // Safety fallback
+      setTimeout(() => {
+        if (document.getElementById("splash")) {
+          fadeOutSplash();
+        }
+      }, 3500);
+
+    } catch (err) {
+      console.error("Splash playback failed:", err);
+      fadeOutSplash();
+    }
+  };
+
+  tapOverlay.addEventListener("click", startSplash, { once: true });
+  tapOverlay.addEventListener("touchstart", startSplash, { once: true });
 });
