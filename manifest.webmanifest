@@ -1,18 +1,19 @@
 {
   "name": "Maccy Match",
   "short_name": "Maccy Match",
-  "start_url": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#fff4d6",
-  "theme_color": "#ffcc66",
+  "background_color": "#FFD66B",
+  "theme_color": "#FFD66B",
   "icons": [
     {
-      "src": "assets/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "assets/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
