@@ -5,21 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Maccy Match</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="/MaccyMatch/manifest.webmanifest?v=3">
+  <!-- PWA manifest (cache-bust to force iOS to reload) -->
+  <link rel="manifest" href="/MaccyMatch/manifest.webmanifest?v=1">
 
-  <!-- iOS Home Screen Icon (iOS uses THIS, not the manifest icons) -->
-  <link rel="apple-touch-icon" href="/MaccyMatch/Assets/icon-512.png?v=3">
+  <!-- iOS Home Screen icon (iOS uses THIS) -->
+  <link rel="apple-touch-icon" href="/MaccyMatch/assets/icon-512.png?v=1">
+
+  <!-- iOS PWA mode -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Maccy Match">
 
-  <!-- Theme -->
   <meta name="theme-color" content="#FFD66B">
 
   <style>
     html, body { margin:0; height:100%; background:#FFD66B; overflow:hidden; }
-    #app { height:100%; display:flex; align-items:center; justify-content:center; font-family:-apple-system, system-ui, Segoe UI, Roboto, sans-serif; }
+    #app { height:100%; display:flex; align-items:center; justify-content:center;
+           font-family:-apple-system, system-ui, Segoe UI, Roboto, sans-serif; }
   </style>
 </head>
 
@@ -27,11 +29,10 @@
   <div id="app">Maccy Match</div>
 
   <script>
-    // Service workers often DON'T work in Private mode on iOS.
+    // NOTE: iOS Safari Private Browsing often breaks service workers.
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/MaccyMatch/sw.js?v=3")
-          .catch(console.error);
+        navigator.serviceWorker.register("/MaccyMatch/sw.js?v=1").catch(console.error);
       });
     }
   </script>
