@@ -2,7 +2,8 @@
    - Derives the MP4 path from the splash image src (avoids case/path mismatches)
    - Tries unmuted play first, falls back to muted if blocked
    - Adds robust logging and error handlers
-   - Keeps pointer events off the image so the container receives taps
+   - Uses multiple strategies to determine duration (duration, seekable, buffered)
+   - Watches durationchange/progress/timeupdate to avoid premature cutoff
 */
 
 function renderMenu() {
@@ -36,10 +37,63 @@ window.addEventListener("load", () => {
   let started = false;
   let safetyTimer = null;
 
+  // Estimate duration from duration, seekable, or buffered ranges
+  const estimateDuration = () => {
+    try {
+      if (isFinite(video.duration) && video.duration > 0) return video.duration;
+      if (video.seekable && video.seekable.length) {
+        return video.seekable.end(video.seekable.length - 1);
+      }
+      if (video.buffered && video.buffered.length) {
+        return video.buffered.end(video.buffered.length - 1);
+      }
+    } catch (e) {
+      // ignore any exceptions accessing ranges
+    }
+    return null;
+  };
+
+  // Set a safety timer slightly after the estimated duration to avoid early cut-off
   const setSafetyFromDuration = () => {
-    if (!isFinite(video.duration) || video.duration <= 0) return;
+    const d = estimateDuration();
+    if (!d) {
+      console.debug('setSafetyFromDuration: no duration available yet', {
+        duration: video.duration,
+        buffered: video.buffered && video.buffered.length ? video.buffered.end(video.buffered.length - 1) : null,
+        seekable: video.seekable && video.seekable.length ? video.seekable.end(video.seekable.length - 1) : null,
+      });
+      return;
+    }
     clearTimeout(safetyTimer);
-    safetyTimer = setTimeout(hideSplash, Math.ceil(video.duration * 1000) + 400);
+    // Add a buffer (800ms) to avoid premature hiding
+    safetyTimer = setTimeout(() => {
+      console.debug('safety timer fired after estimated duration', { estimatedDurationMs: Math.ceil(d * 1000) + 800 });
+      hideSplash();
+    }, Math.ceil(d * 1000) + 800);
+    console.debug('safety timer set', { seconds: d, timeoutMs: Math.ceil(d * 1000) + 800 });
+  };
+
+  // If currentTime approaches duration, hide immediately (guard against stale timers)
+  const maybeHideAtEnd = () => {
+    if (isFinite(video.duration) && video.duration > 0) {
+      if (video.currentTime >= Math.max(0, video.duration - 0.25)) {
+        clearTimeout(safetyTimer);
+        hideSplash();
+      }
+    }
+  };
+
+  const clearPlaybackListeners = (opts = {}) => {
+    try {
+      video.removeEventListener("loadedmetadata", setSafetyFromDuration);
+      video.removeEventListener("durationchange", setSafetyFromDuration);
+      video.removeEventListener("progress", setSafetyFromDuration);
+      video.removeEventListener("timeupdate", maybeHideAtEnd);
+    } catch (e) { /* ignore */ }
+    if (opts.clearTimer) {
+      clearTimeout(safetyTimer);
+      safetyTimer = null;
+    }
   };
 
   const start = async (ev) => {
@@ -56,7 +110,7 @@ window.addEventListener("load", () => {
     const imgSrc = img.getAttribute('src') || '';
     let videoSrc = imgSrc.replace(/(\.(png|jpg|jpeg))(?:\?.*)?$/i, '.mp4');
 
-    // If no replacement happened, fallback to a relative Assets path (adjust if your repo uses different folder)
+    // If no replacement happened, fallback to a relative Assets path
     if (videoSrc === imgSrc) {
       videoSrc = './Assets/Splash.mp4';
     }
@@ -66,37 +120,34 @@ window.addEventListener("load", () => {
       videoSrc += '?v=10';
     }
 
-    video.src = videoSrc;
-    video.currentTime = 0;
-
     // show the video above the image
     video.style.display = "block";
     video.style.zIndex = "2";
     img.style.zIndex = "1";
 
-    // remove any previously attached listeners
-    video.removeEventListener("loadedmetadata", setSafetyFromDuration);
-    video.removeEventListener("ended", hideSplash);
+    // reset any previous state
+    video.currentTime = 0;
+    video.pause();
 
-    video.addEventListener("loadedmetadata", setSafetyFromDuration, { once: true });
-    video.addEventListener("ended", () => {
+    // Remove previously attached handlers (if any)
+    clearPlaybackListeners({ clearTimer: true });
+
+    // Attach robust listeners
+    video.addEventListener("loadedmetadata", setSafetyFromDuration);
+    video.addEventListener("durationchange", setSafetyFromDuration);
+    video.addEventListener("progress", setSafetyFromDuration);
+    video.addEventListener("timeupdate", maybeHideAtEnd);
+
+    const onEnded = () => {
       clearTimeout(safetyTimer);
       hideSplash();
-    }, { once: true });
+    };
 
-    // Helpful debug logging
-    console.log('Attempting to play splash video', { src: video.src, evType: ev ? ev.type : undefined });
-
-    // Try play unmuted first (because this is user gesture). If blocked, fall back to muted.
-    video.muted = false;
-    video.volume = 1.0;
-
-    // Error handler to capture network/decoding errors
-    video.addEventListener('error', (e) => {
+    const onError = (e) => {
       console.error('splash video element error', e, {
         src: video.src,
-        networkState: video.networkState,
         readyState: video.readyState,
+        networkState: video.networkState,
       });
       // Let user retry
       started = false;
@@ -104,27 +155,42 @@ window.addEventListener("load", () => {
       tapText.style.display = "block";
       video.pause();
       video.style.display = "none";
-    }, { once: true });
+      clearPlaybackListeners({ clearTimer: true });
+    };
+
+    video.addEventListener("ended", onEnded, { once: true });
+    video.addEventListener("error", onError, { once: true });
+
+    // Helpful debug logging
+    console.log('Attempting to play splash video', { src: videoSrc, evType: ev ? ev.type : undefined });
+
+    video.src = videoSrc;
+
+    // Try play unmuted first (because this is user gesture). If blocked, fall back to muted.
+    video.muted = false;
+    video.volume = 1.0;
 
     try {
       await video.play();
-      console.log('splash video started (unmuted)');
+      console.log('splash video started (unmuted)', { readyState: video.readyState, duration: video.duration });
     } catch (e) {
       console.warn('unmuted play blocked or failed, trying muted play', e);
       // Try muted play (works around autoplay-with-sound policies)
       try {
         video.muted = true;
         await video.play();
-        console.log('splash video started (muted)');
+        console.log('splash video started (muted)', { readyState: video.readyState, duration: video.duration });
         // Let user know sound is available on another tap
         tapText.textContent = "Tap to enable sound";
         tapText.style.display = "block";
         // Allow a single extra tap to unmute and continue
-        const enableSoundOnce = async () => {
+        const enableSoundOnce = async (ev2) => {
           try {
             video.muted = false;
-            await video.play(); // usually still playing; unmute may be enough
+            // attempt to keep playing (unmute may be enough)
+            await video.play();
             tapText.style.display = "none";
+            console.log('user enabled sound');
           } catch (err) {
             console.error('unmute attempt failed', err);
             tapText.textContent = "Sound blocked";
@@ -146,6 +212,7 @@ window.addEventListener("load", () => {
         tapText.style.display = "block";
         video.pause();
         video.style.display = "none";
+        clearPlaybackListeners({ clearTimer: true });
         return;
       }
     }
