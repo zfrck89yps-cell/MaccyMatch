@@ -1,313 +1,452 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+/* app.js
+   - Splash: keeps PNG until video is playing (your working flow)
+   - Menu: 6 equal cards (Animals image + 5 placeholders), starts lower (CSS already handles)
+   - Game (Animals Easy): 6 cards (3 pairs) FACE UP
+   - Match: cards “smash” together in centre + confetti
+   - Wrong: nothing happens (no flip-back, no shake)
+   - Win: BIG “Well done!” + confetti, then after 5s return to menu
+   - Difficulty dots still save/restore (for later), but Animals currently always starts Easy (6 cards)
+*/
 
-  <!-- iOS Home Screen icon -->
-  <link rel="apple-touch-icon" href="Assets/apple-touch-icon.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Maccy Match">
+(function () {
+  // ---------- MENU ----------
+  function renderMenu() {
+    const app = document.getElementById("app");
+    app.className = "menu";
 
-  <title>Maccy Match</title>
+    app.innerHTML = `
+      <div class="menuWrap">
+        <div class="menuGrid" aria-label="Categories">
 
-  <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      overflow: hidden;
-      background: #000;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+          <button class="catCardBtn" id="catAnimals" aria-label="Animals">
+            <img class="catImg" src="./Assets/Animals.PNG" alt="Animals">
+          </button>
+
+          <button class="catCardBtn placeholder" disabled aria-label="Vehicles (coming soon)">Vehicles</button>
+          <button class="catCardBtn placeholder" disabled aria-label="Food (coming soon)">Food</button>
+          <button class="catCardBtn placeholder" disabled aria-label="Numbers (coming soon)">Numbers</button>
+          <button class="catCardBtn placeholder" disabled aria-label="Colours (coming soon)">Colours</button>
+          <button class="catCardBtn placeholder" disabled aria-label="Shapes (coming soon)">Shapes</button>
+
+        </div>
+      </div>
+
+      <div class="scrollHint">‹ ›</div>
+
+      <div class="difficulty" id="difficultyBox" aria-label="Difficulty">
+        <div class="difficultyTitle">Difficulty</div>
+        <div class="dots">
+          <div class="dot g" data-level="easy" title="Beginner"></div>
+          <div class="dot y" data-level="medium" title="Intermediate"></div>
+          <div class="dot r" data-level="hard" title="Hard"></div>
+        </div>
+      </div>
+    `;
+
+    // Animals starts game (Easy only for now)
+    document.getElementById("catAnimals").addEventListener("click", () => {
+      startAnimalsEasy();
+    });
+
+    // Keep difficulty settings stored for later (doesn’t affect Animals right now)
+    const saved = localStorage.getItem("mm_difficulty") || "easy";
+    setDifficulty(saved);
+
+    app.querySelectorAll(".dot").forEach(dot => {
+      dot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setDifficulty(dot.dataset.level);
+      });
+    });
+  }
+
+  function setDifficulty(level) {
+    localStorage.setItem("mm_difficulty", level);
+    document.querySelectorAll(".dot").forEach(d => {
+      d.classList.toggle("active", d.dataset.level === level);
+    });
+  }
+
+  // ---------- ANIMALS (EASY: 6 CARDS / 3 PAIRS) ----------
+  function startAnimalsEasy() {
+    const app = document.getElementById("app");
+    app.className = "game";
+
+    // Pick 3 animals (you can change these any time)
+    const picks = [
+      { key: "cat",  src: "./Assets/Cat.png"  },
+      { key: "dog",  src: "./Assets/Dog.png"  },
+      { key: "duck", src: "./Assets/Duck.png" },
+    ];
+
+    // duplicate -> 6 cards then shuffle
+    const cards = shuffle([...picks, ...picks].map((c, i) => ({ ...c, id: `${c.key}_${i}` })));
+
+    app.innerHTML = `
+      <div class="gameWrap">
+        <div class="gameGrid" id="gameGrid" aria-label="Match the cards">
+          ${cards.map(c => `
+            <button class="gameCard" data-key="${c.key}" data-id="${c.id}" aria-label="${c.key}">
+              <img src="${c.src}" alt="${c.key}">
+            </button>
+          `).join("")}
+        </div>
+      </div>
+      <div class="difficulty" id="difficultyBox" aria-label="Difficulty">
+        <div class="difficultyTitle">Difficulty</div>
+        <div class="dots">
+          <div class="dot g" data-level="easy" title="Beginner"></div>
+          <div class="dot y" data-level="medium" title="Intermediate"></div>
+          <div class="dot r" data-level="hard" title="Hard"></div>
+        </div>
+      </div>
+    `;
+
+    // Keep dots visible + state (still for later)
+    const saved = localStorage.getItem("mm_difficulty") || "easy";
+    setDifficulty(saved);
+    app.querySelectorAll(".dot").forEach(dot => {
+      dot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setDifficulty(dot.dataset.level);
+      });
+    });
+
+    // gameplay state
+    const grid = document.getElementById("gameGrid");
+    let first = null;
+    let second = null;
+    let locked = false;
+    let matchedCount = 0;
+
+    grid.querySelectorAll(".gameCard").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (locked) return;
+        if (btn.classList.contains("matched")) return;
+        if (btn === first) return;
+
+        // select logic (FACE UP so we only outline)
+        btn.classList.add("selected");
+
+        if (!first) {
+          first = btn;
+          return;
+        }
+
+        second = btn;
+        locked = true;
+
+        const k1 = first.dataset.key;
+        const k2 = second.dataset.key;
+
+        if (k1 === k2) {
+          // MATCH: smash + confetti, then hide both
+          playSmash(first, second, () => {
+            first.classList.remove("selected");
+            second.classList.remove("selected");
+            first.classList.add("matched");
+            second.classList.add("matched");
+
+            matchedCount += 2;
+            first = null;
+            second = null;
+            locked = false;
+
+            if (matchedCount === 6) {
+              winSequence();
+            }
+          });
+        } else {
+          // WRONG: nothing happens (except remove outline after a short moment)
+          setTimeout(() => {
+            first.classList.remove("selected");
+            second.classList.remove("selected");
+            first = null;
+            second = null;
+            locked = false;
+          }, 350);
+        }
+      });
+    });
+
+    function winSequence() {
+      // Big well done + confetti, then return to menu
+      burstConfetti(1800);
+
+      const overlay = document.createElement("div");
+      overlay.className = "winOverlay";
+      overlay.innerHTML = `<div class="winText">Well done!</div>`;
+      document.body.appendChild(overlay);
+
+      setTimeout(() => {
+        overlay.remove();
+        renderMenu();
+      }, 5000);
+    }
+  }
+
+  // ---------- SMASH ANIMATION ----------
+  function playSmash(cardA, cardB, onDone) {
+    // Create layer
+    const layer = document.createElement("div");
+    layer.className = "smashLayer";
+    document.body.appendChild(layer);
+
+    const rA = cardA.getBoundingClientRect();
+    const rB = cardB.getBoundingClientRect();
+
+    // Make clones (images only)
+    const cloneA = makeClone(cardA, rA);
+    const cloneB = makeClone(cardB, rB);
+    layer.appendChild(cloneA);
+    layer.appendChild(cloneB);
+
+    // Confetti burst on match
+    burstConfetti(900);
+
+    // Animate to centre
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+
+    const toCenterA = {
+      x: cx - (rA.left + rA.width / 2),
+      y: cy - (rA.top + rA.height / 2),
+    };
+    const toCenterB = {
+      x: cx - (rB.left + rB.width / 2),
+      y: cy - (rB.top + rB.height / 2),
+    };
+
+    // step 1: move in
+    cloneA.animate(
+      [
+        { transform: `translate(0px,0px) scale(1)` },
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
+      ],
+      { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" }
+    );
+
+    cloneB.animate(
+      [
+        { transform: `translate(0px,0px) scale(1)` },
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
+      ],
+      { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" }
+    );
+
+    // step 2: “smash” bounce
+    setTimeout(() => {
+      cloneA.animate(
+        [
+          { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
+          { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(0.96)` },
+          { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.02)` },
+        ],
+        { duration: 200, easing: "ease-out", fill: "forwards" }
+      );
+
+      cloneB.animate(
+        [
+          { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
+          { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(0.96)` },
+          { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.02)` },
+        ],
+        { duration: 200, easing: "ease-out", fill: "forwards" }
+      );
+    }, 260);
+
+    // finish
+    setTimeout(() => {
+      layer.remove();
+      onDone && onDone();
+    }, 520);
+  }
+
+  function makeClone(cardBtn, rect) {
+    const clone = document.createElement("div");
+    clone.className = "smashClone";
+    clone.style.left = rect.left + "px";
+    clone.style.top = rect.top + "px";
+    clone.style.width = rect.width + "px";
+    clone.style.height = rect.height + "px";
+
+    const img = cardBtn.querySelector("img");
+    const imgClone = document.createElement("img");
+    imgClone.src = img?.src || "";
+    imgClone.alt = img?.alt || "";
+    imgClone.style.width = "100%";
+    imgClone.style.height = "100%";
+    imgClone.style.objectFit = "cover";
+    imgClone.style.display = "block";
+
+    clone.appendChild(imgClone);
+    return clone;
+  }
+
+  // ---------- CONFETTI (CANVAS) ----------
+  const confettiCanvas = () => document.getElementById("confettiCanvas");
+  let confettiRAF = null;
+
+  function burstConfetti(durationMs = 800) {
+    const canvas = confettiCanvas();
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+
+    function resize() {
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+
+    const start = performance.now();
+    const pieces = [];
+    const count = 120;
+
+    for (let i = 0; i < count; i++) {
+      pieces.push({
+        x: Math.random() * window.innerWidth,
+        y: -20 - Math.random() * 200,
+        vx: (Math.random() - 0.5) * 6,
+        vy: 3 + Math.random() * 6,
+        r: 3 + Math.random() * 5,
+        a: Math.random() * Math.PI * 2,
+        va: (Math.random() - 0.5) * 0.3
+      });
     }
 
-    /* ---------- SPLASH ---------- */
-    #splash {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 1;
-      transition: opacity 350ms ease;
-      touch-action: manipulation;
-    }
-    #splash.hidden { opacity: 0; pointer-events: none; }
+    // simple “bright” palette
+    const colors = ["#FFD84D", "#35D05A", "#4DA3FF", "#FF4D4D", "#FF7AD9", "#FFFFFF"];
 
-    #splashImg, #splashVideo {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      background: #000;
-    }
-    #splashImg { pointer-events: none; user-select: none; -webkit-user-drag: none; }
-    #splashVideo { display: none; }
+    function frame(t) {
+      const elapsed = t - start;
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-    #tapText {
-      position: absolute;
-      bottom: 48px;
-      padding: 14px 30px;
-      font-size: 32px;
-      font-weight: 900;
-      color: #FFD84D;
-      background: rgba(255, 180, 0, 0.18);
-      border-radius: 999px;
-      text-shadow: 0 3px 0 #C97A00, 0 10px 18px rgba(0,0,0,0.35);
-      animation: pulse 1.6s ease-in-out infinite;
-      user-select: none;
-      pointer-events: none;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: .85; }
-      50% { transform: scale(1.08); opacity: 1; }
-      100% { transform: scale(1); opacity: .85; }
+      for (const p of pieces) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08; // gravity
+        p.a += p.va;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.a);
+        ctx.fillStyle = colors[(Math.random() * colors.length) | 0];
+        ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
+        ctx.restore();
+      }
+
+      if (elapsed < durationMs) {
+        confettiRAF = requestAnimationFrame(frame);
+      } else {
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        confettiRAF = null;
+      }
     }
 
-    /* ---------- APP ---------- */
-    #app {
-      width: 100%;
-      height: 100%;
-      display: none;
-      position: relative;
-      background: #000;
-      overflow: hidden;
+    if (confettiRAF) cancelAnimationFrame(confettiRAF);
+    confettiRAF = requestAnimationFrame(frame);
+  }
+
+  // ---------- UTIL ----------
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
     }
+    return arr;
+  }
 
-    /* Menu background image */
-    #app.menu {
-      background-image: url("./Assets/Menu-background.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
+  function showApp() {
+    const app = document.getElementById("app");
+    app.style.display = "block";
+  }
 
-    /* Game background image */
-    #app.game {
-      background-image: url("./Assets/Game-background.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
+  function hideSplash() {
+    const splash = document.getElementById("splash");
+    if (!splash) return;
+    splash.classList.add("hidden");
+    setTimeout(() => splash.remove(), 400);
+  }
 
-    /* ---------- MENU LAYOUT ---------- */
-    .menuWrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      padding: 24vh 48px 80px; /* pushes grid down below baked-in title */
-    }
+  // ---------- STARTUP (your working splash flow) ----------
+  window.addEventListener("load", () => {
+    renderMenu();
+    showApp();
 
-    .menuGrid {
-      width: min(1200px, 92vw);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-auto-rows: 1fr;
-      gap: 22px;
-      align-content: start;
-    }
+    const splash = document.getElementById("splash");
+    const tapText = document.getElementById("tapText");
+    const img = document.getElementById("splashImg");
+    const video = document.getElementById("splashVideo");
 
-    .catCardBtn {
-      border: none;
-      border-radius: 22px;
-      padding: 0;
-      background: rgba(255,255,255,0.20);
-      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-      overflow: hidden;
-      cursor: pointer;
+    if (!splash || !video || !img) return;
 
-      /* equal-size cards */
-      aspect-ratio: 16 / 9;
-      width: 100%;
-    }
-    .catCardBtn:active { transform: scale(0.99); }
+    img.style.display = "block";
+    img.style.opacity = "1";
+    video.style.display = "none";
+    tapText.style.display = "block";
 
-    .catImg {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    let started = false;
 
-    .placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,0.35);
-      border: 2px solid rgba(255,255,255,0.35);
-      color: rgba(0,0,0,0.55);
-      font-weight: 900;
-      font-size: 22px;
-    }
-    .placeholder:disabled { opacity: 0.85; cursor: default; }
+    const start = async () => {
+      if (started) return;
+      started = true;
 
-    /* scroll hint bottom-left */
-    .scrollHint {
-      position: absolute;
-      left: 18px;
-      bottom: 18px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: rgba(0,0,0,0.25);
-      color: rgba(255,255,255,0.9);
-      font-size: 22px;
-      font-weight: 800;
-      user-select: none;
-    }
+      tapText.textContent = "Loading…";
+      tapText.style.display = "block";
 
-    /* difficulty bottom-right */
-    .difficulty {
-      position: absolute;
-      right: 18px;
-      bottom: 18px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.78);
-      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
-      display: grid;
-      gap: 8px;
-      user-select: none;
-    }
-    .difficultyTitle {
-      font-weight: 900;
-      font-size: 16px;
-      opacity: .9;
-      text-align: center;
-    }
-    .dots { display: flex; gap: 10px; justify-content: center; }
-    .dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 999px;
-      border: 3px solid rgba(255,255,255,0.9);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      cursor: pointer;
-      opacity: 0.55;
-    }
-    .dot.active { opacity: 1; transform: scale(1.05); }
-    .g { background: #35d05a; }
-    .y { background: #ffd84d; }
-    .r { background: #ff4d4d; }
+      video.src = "./Assets/Splash.mp4?v=" + Date.now();
+      video.currentTime = 0;
+      video.muted = false;
+      video.volume = 1.0;
 
-    /* ---------- GAME LAYOUT ---------- */
-    .gameWrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      padding: 20vh 48px 60px; /* starts about 1/5 down */
-    }
+      let endedAlready = false;
+      const endSplash = () => {
+        if (endedAlready) return;
+        endedAlready = true;
+        hideSplash();
+      };
 
-    .gameGrid {
-      width: min(1200px, 92vw);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 22px;
-      align-content: start;
-    }
+      video.addEventListener("ended", endSplash, { once: true });
 
-    .gameCard {
-      border: none;
-      border-radius: 22px;
-      padding: 0;
-      background: rgba(255,255,255,0.18);
-      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-      overflow: hidden;
-      cursor: pointer;
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      position: relative;
-      outline: none;
-      transform: translateZ(0);
-    }
+      const failToMenu = () => endSplash();
 
-    .gameCard img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+      const onPlaying = () => {
+        tapText.style.display = "none";
+        video.style.display = "block";
+        img.style.display = "none";
 
-    .gameCard.selected {
-      outline: 6px solid rgba(255,255,255,0.85);
-      transform: scale(1.01);
-    }
+        const ms = (Number.isFinite(video.duration) && video.duration > 0)
+          ? Math.ceil(video.duration * 1000) + 400
+          : 4500;
 
-    .gameCard.matched {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 200ms ease;
-    }
+        setTimeout(endSplash, ms);
+      };
 
-    /* Match “smash” overlay */
-    .smashLayer {
-      position: fixed;
-      inset: 0;
-      z-index: 9998;
-      pointer-events: none;
-    }
+      video.addEventListener("playing", onPlaying, { once: true });
+      video.addEventListener("error", failToMenu, { once: true });
 
-    .smashClone {
-      position: absolute;
-      border-radius: 22px;
-      overflow: hidden;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-      will-change: transform;
-    }
+      try {
+        await video.play();
+      } catch (e) {
+        try {
+          video.muted = true;
+          await video.play();
+        } catch (e2) {
+          failToMenu();
+        }
+      }
+    };
 
-    /* Win overlay */
-    .winOverlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-    }
-    .winText {
-      font-size: clamp(42px, 6vw, 92px);
-      font-weight: 1000;
-      color: #FFD84D;
-      text-shadow: 0 5px 0 #C97A00, 0 16px 30px rgba(0,0,0,0.35);
-      padding: 18px 30px;
-      border-radius: 26px;
-      background: rgba(0,0,0,0.20);
-    }
+    splash.addEventListener("pointerup", start);
+    splash.addEventListener("touchend", start);
+  });
 
-    /* Confetti canvas */
-    #confettiCanvas {
-      position: fixed;
-      inset: 0;
-      z-index: 9997;
-      pointer-events: none;
-    }
-  </style>
-</head>
-
-<body>
-  <!-- Splash -->
-  <div id="splash" role="button" aria-label="Tap to start">
-    <img id="splashImg" src="./Assets/Splash.PNG?v=1" alt="Maccy Match">
-    <video id="splashVideo"
-           playsinline
-           webkit-playsinline
-           preload="auto"
-           src="./Assets/Splash.mp4?v=1"></video>
-    <div id="tapText">Tap to Start</div>
-  </div>
-
-  <!-- App -->
-  <div id="app"></div>
-
-  <!-- Confetti -->
-  <canvas id="confettiCanvas"></canvas>
-
-  <script src="./app.js?v=1"></script>
-</body>
-</html>
+  // expose if you ever need to call manually from console
+  window.renderMenu = renderMenu;
+  window.startAnimalsEasy = startAnimalsEasy;
+})();
