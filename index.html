@@ -1,32 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Maccy Match</title>
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      background: #000;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #000; /* only visible if app fails to render */
     }
 
-    /* Splash */
+    /* APP (always visible, never display:none) */
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: url("./Assets/Menu-background.png") center/cover no-repeat;
+    }
+
+    /* SPLASH overlay */
     #splash {
       position: fixed;
       inset: 0;
       z-index: 9999;
       background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       opacity: 1;
-      transition: opacity 420ms ease;
-      touch-action: manipulation;
+      transition: opacity 350ms ease;
     }
     #splash.hidden { opacity: 0; pointer-events: none; }
 
@@ -38,15 +44,18 @@
       object-fit: cover;
       background: #000;
     }
+
     #splashImg { pointer-events: none; user-select: none; -webkit-user-drag: none; }
     #splashVideo { display: none; }
 
     #tapText {
       position: absolute;
-      bottom: 44px;
-      padding: 14px 34px;
-      font-size: 34px;
-      font-weight: 1000;
+      left: 50%;
+      bottom: 48px;
+      transform: translateX(-50%);
+      padding: 14px 30px;
+      font-size: 32px;
+      font-weight: 900;
       color: #FFD84D;
       background: rgba(255, 180, 0, 0.18);
       border-radius: 999px;
@@ -55,48 +64,26 @@
       user-select: none;
       pointer-events: none;
     }
+
     @keyframes pulse {
-      0% { transform: scale(1); opacity: .85; }
-      50% { transform: scale(1.08); opacity: 1; }
-      100% { transform: scale(1); opacity: .85; }
-    }
-
-    /* App root: give a visible fallback so it never looks "broken" */
-    #app {
-      width: 100%;
-      height: 100%;
-      background: #111;
-      display: block;
-    }
-
-    /* Tiny debug label (if you see this after splash, JS is running) */
-    #debugBadge{
-      position: fixed;
-      left: 10px;
-      bottom: 10px;
-      z-index: 5;
-      padding: 6px 10px;
-      font-size: 12px;
-      color: rgba(255,255,255,.9);
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 10px;
-      pointer-events: none;
-      display:none;
+      0% { transform: translateX(-50%) scale(1); opacity: .85; }
+      50% { transform: translateX(-50%) scale(1.08); opacity: 1; }
+      100% { transform: translateX(-50%) scale(1); opacity: .85; }
     }
   </style>
 </head>
 
 <body>
-  <div id="splash" tabindex="0" role="button" aria-label="Tap to start">
-    <img id="splashImg" src="./Assets/Splash.PNG?v=2" alt="Maccy Match">
+  <!-- Menu area (always visible behind splash) -->
+  <div id="app"></div>
+
+  <!-- Splash sits on top -->
+  <div id="splash" aria-label="Start">
+    <img id="splashImg" src="./Assets/Splash.PNG?v=1" alt="Maccy Match">
     <video id="splashVideo" playsinline webkit-playsinline preload="auto"></video>
     <div id="tapText">Tap to Start</div>
   </div>
 
-  <div id="app"></div>
-  <div id="debugBadge">JS running</div>
-
-  <script src="./app.js?v=2"></script>
+  <script src="./app.js?v=1"></script>
 </body>
 </html>
