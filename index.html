@@ -2,16 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+
   <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
   <title>Maccy Match</title>
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="/MaccyMatch/manifest.webmanifest?v=1">
+  <!-- PWA -->
+  <link rel="manifest" href="/MaccyMatch/manifest.webmanifest?v=2">
 
   <!-- iOS Home Screen Icon -->
-  <link rel="apple-touch-icon" href="/MaccyMatch/Assets/apple-touch-icon.png?v=1">
+  <link rel="apple-touch-icon" href="/MaccyMatch/Assets/apple-touch-icon.png?v=2">
 
   <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,134 +32,52 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    /* ============ SPLASH ============ */
+    /* SPLASH */
     #splash {
       position: fixed;
       inset: 0;
+      background: black;
       z-index: 9999;
-      background: #FFD84D;
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 1;
-      transition: opacity 350ms ease;
     }
 
-    #splash.hidden {
-      opacity: 0;
-      pointer-events: none;
+    #splash video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
-    /* The static PNG as a full-screen background */
-    #splashBg {
-      position: absolute;
-      inset: 0;
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: cover;
-
-      /* subtle “alive” animation */
-      animation: splashPop 900ms ease-out 1, splashFloat 2400ms ease-in-out infinite;
-      transform-origin: center;
-    }
-
-    @keyframes splashPop {
-      0%   { transform: scale(0.96); filter: brightness(0.95) saturate(1.05); }
-      60%  { transform: scale(1.02); filter: brightness(1.02) saturate(1.12); }
-      100% { transform: scale(1.00); filter: brightness(1.00) saturate(1.08); }
-    }
-
-    @keyframes splashFloat {
-      0%, 100% { transform: translateY(0px) scale(1.00); }
-      50%      { transform: translateY(-6px) scale(1.01); }
-    }
-
-    /* CSS confetti overlay (no GIF) */
-    #confetti {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-
-    .piece {
-      position: absolute;
-      top: -10vh;
-      width: 10px;
-      height: 14px;
-      opacity: 0.95;
-      border-radius: 2px;
-      animation: fall linear infinite, spin ease-in-out infinite;
-      will-change: transform;
-    }
-
-    @keyframes fall {
-      to { transform: translateY(120vh); }
-    }
-
-    @keyframes spin {
-      0%, 100% { rotate: 0deg; }
-      50%      { rotate: 180deg; }
-    }
-
-    /* ============ APP ============ */
+    /* APP */
     #app {
       width: 100%;
       height: 100%;
-      background: #FFF4CC;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: #FFF4CC;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- SPLASH -->
+  <!-- SPLASH VIDEO -->
   <div id="splash" aria-hidden="true">
-    <div id="splashBg"></div>
-    <div id="confetti"></div>
+    <video
+      id="splashVideo"
+      src="/MaccyMatch/Assets/Splash.mp4?v=2"
+      autoplay
+      muted
+      playsinline
+      preload="auto">
+    </video>
   </div>
 
   <!-- APP -->
   <div id="app"></div>
 
   <script src="app.js"></script>
-
-  <script>
-    // ⚠️ CHANGE THIS to your exact filename + capitals
-    const SPLASH_FILE = "/MaccyMatch/Assets/splash.PNG";
-
-    // Apply splash image
-    document.getElementById("splashBg").style.backgroundImage = `url('${SPLASH_FILE}')`;
-
-    // Build confetti pieces (pure CSS animation)
-    const confetti = document.getElementById("confetti");
-    const colors = ["#FF4D6D", "#FFD84D", "#4D96FF", "#7CFF6B", "#B84DFF", "#FF8A4D"];
-
-    const count = 42; // enough to feel fun, not heavy
-    for (let i = 0; i < count; i++) {
-      const p = document.createElement("div");
-      p.className = "piece";
-
-      const left = Math.random() * 100;               // %
-      const size = 6 + Math.random() * 10;            // px
-      const duration = 1.8 + Math.random() * 1.8;     // s
-      const delay = Math.random() * 0.9;              // s
-      const spinDur = 0.9 + Math.random() * 1.3;      // s
-      const color = colors[Math.floor(Math.random() * colors.length)];
-
-      p.style.left = left + "vw";
-      p.style.width = size + "px";
-      p.style.height = (size * 1.3) + "px";
-      p.style.background = color;
-      p.style.animationDuration = `${duration}s, ${spinDur}s`;
-      p.style.animationDelay = `${delay}s, ${delay}s`;
-
-      confetti.appendChild(p);
-    }
-  </script>
-
 </body>
 </html>
