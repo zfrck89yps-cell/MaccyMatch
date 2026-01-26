@@ -68,7 +68,7 @@
       100% { transform: scale(1); opacity: .85; }
     }
 
-    /* ---------- APP ROOT ---------- */
+    /* ---------- APP ---------- */
     #app {
       width: 100%;
       height: 100%;
@@ -78,7 +78,7 @@
       overflow: hidden;
     }
 
-    /* Menu background */
+    /* Menu background image */
     #app.menu {
       background-image: url("./Assets/Menu-background.png");
       background-size: cover;
@@ -86,7 +86,7 @@
       background-repeat: no-repeat;
     }
 
-    /* Game background */
+    /* Game background image */
     #app.game {
       background-image: url("./Assets/Game-background.png");
       background-size: cover;
@@ -99,35 +99,33 @@
       position: absolute;
       inset: 0;
       display: flex;
-      align-items: flex-start;
       justify-content: center;
-      padding: 0 48px 80px;
+      padding: 24vh 48px 80px; /* pushes grid down below baked-in title */
     }
 
-    /* EXACTLY 6 equal cards (3x2) */
     .menuGrid {
-      width: min(1200px, 94vw);
-      margin-top: 22vh;   /* clears baked title */
+      width: min(1200px, 92vw);
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(2, 1fr);
+      grid-auto-rows: 1fr;
       gap: 22px;
+      align-content: start;
     }
 
-    .catCard {
+    .catCardBtn {
       border: none;
       border-radius: 22px;
       padding: 0;
+      background: rgba(255,255,255,0.20);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
       overflow: hidden;
       cursor: pointer;
-      background: rgba(255,255,255,0.65);
-      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
-      aspect-ratio: 16 / 9; /* keeps all six the same */
-      display: flex;
-      align-items: center;
-      justify-content: center;
+
+      /* equal-size cards */
+      aspect-ratio: 16 / 9;
+      width: 100%;
     }
-    .catCard:active { transform: scale(0.99); }
+    .catCardBtn:active { transform: scale(0.99); }
 
     .catImg {
       width: 100%;
@@ -136,16 +134,17 @@
       display: block;
     }
 
-    .placeholderText{
-      font-weight: 900;
-      font-size: 26px;
+    .placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.35);
+      border: 2px solid rgba(255,255,255,0.35);
       color: rgba(0,0,0,0.55);
-      text-shadow: 0 2px 0 rgba(255,255,255,0.5);
+      font-weight: 900;
+      font-size: 22px;
     }
-    .catCard[disabled] {
-      opacity: 0.85;
-      cursor: not-allowed;
-    }
+    .placeholder:disabled { opacity: 0.85; cursor: default; }
 
     /* scroll hint bottom-left */
     .scrollHint {
@@ -173,7 +172,6 @@
       display: grid;
       gap: 8px;
       user-select: none;
-      z-index: 5;
     }
     .difficultyTitle {
       font-weight: 900;
@@ -197,107 +195,97 @@
     .r { background: #ff4d4d; }
 
     /* ---------- GAME LAYOUT ---------- */
-    .gameWrap{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:flex-start;
-      justify-content:center;
-      padding: 0 48px 80px;
+    .gameWrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      padding: 20vh 48px 60px; /* starts about 1/5 down */
     }
 
-    .gameGrid{
-      width: min(1200px, 94vw);
-      margin-top: 22vh; /* clears baked title */
-      display:grid;
+    .gameGrid {
+      width: min(1200px, 92vw);
+      display: grid;
       grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(2, 1fr);
       gap: 22px;
+      align-content: start;
     }
 
-    .card {
-      border: 6px solid rgba(255,255,255,0.95); /* white border (scripted) */
+    .gameCard {
+      border: none;
       border-radius: 22px;
+      padding: 0;
+      background: rgba(255,255,255,0.18);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
       overflow: hidden;
-      box-shadow: 0 14px 28px rgba(0,0,0,0.25);
-      background: rgba(255,255,255,0.15);
-      aspect-ratio: 1 / 1; /* matches your animal art better */
       cursor: pointer;
+      aspect-ratio: 1 / 1;
+      width: 100%;
       position: relative;
+      outline: none;
       transform: translateZ(0);
-      transition: transform 180ms ease, filter 180ms ease;
     }
-    .card:active { transform: scale(0.99); }
-    .card.matched { filter: brightness(1.05) saturate(1.05); }
-    .card.disabled { pointer-events:none; opacity: 0.9; }
 
-    .card img{
-      width:100%;
-      height:100%;
+    .gameCard img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      display:block;
+      display: block;
     }
 
-    /* Smash animation helper */
-    .smashOverlay {
+    .gameCard.selected {
+      outline: 6px solid rgba(255,255,255,0.85);
+      transform: scale(1.01);
+    }
+
+    .gameCard.matched {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+
+    /* Match “smash” overlay */
+    .smashLayer {
       position: fixed;
       inset: 0;
       z-index: 9998;
       pointer-events: none;
-      display: none;
-      align-items: center;
-      justify-content: center;
     }
-    .smashOverlay.show { display:flex; }
-    .smashPair {
-      display:flex;
-      gap: 24px;
-      align-items:center;
-      justify-content:center;
-    }
-    .smashImg {
-      width: min(34vw, 420px);
-      aspect-ratio: 1 / 1;
-      border-radius: 28px;
-      overflow:hidden;
-      border: 10px solid rgba(255,255,255,0.95);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-      transform: scale(0.7);
-      opacity: 0;
-      animation: popIn 220ms ease forwards;
-    }
-    @keyframes popIn {
-      to { transform: scale(1); opacity: 1; }
-    }
-    .smashImg img { width:100%; height:100%; object-fit:cover; display:block; }
 
-    /* Confetti canvas */
-    #confetti {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      pointer-events: none;
+    .smashClone {
+      position: absolute;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+      will-change: transform;
     }
 
     /* Win overlay */
-    .winOverlay{
+    .winOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .winText {
+      font-size: clamp(42px, 6vw, 92px);
+      font-weight: 1000;
+      color: #FFD84D;
+      text-shadow: 0 5px 0 #C97A00, 0 16px 30px rgba(0,0,0,0.35);
+      padding: 18px 30px;
+      border-radius: 26px;
+      background: rgba(0,0,0,0.20);
+    }
+
+    /* Confetti canvas */
+    #confettiCanvas {
       position: fixed;
       inset: 0;
       z-index: 9997;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      pointer-events:none;
-    }
-    .winOverlay.show{ display:flex; }
-    .winText{
-      padding: 20px 34px;
-      border-radius: 24px;
-      font-size: clamp(44px, 6vw, 86px);
-      font-weight: 1000;
-      color: #FFD84D;
-      background: rgba(0,0,0,0.28);
-      text-shadow: 0 4px 0 #C97A00, 0 14px 26px rgba(0,0,0,0.35);
+      pointer-events: none;
     }
   </style>
 </head>
@@ -317,14 +305,8 @@
   <!-- App -->
   <div id="app"></div>
 
-  <!-- smash + confetti layers -->
-  <div class="smashOverlay" id="smashOverlay">
-    <div class="smashPair" id="smashPair"></div>
-  </div>
-  <div class="winOverlay" id="winOverlay">
-    <div class="winText">Well done!</div>
-  </div>
-  <canvas id="confetti"></canvas>
+  <!-- Confetti -->
+  <canvas id="confettiCanvas"></canvas>
 
   <script src="./app.js?v=1"></script>
 </body>
