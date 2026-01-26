@@ -1,12 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Maccy Match</title>
 
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     html, body {
       margin: 0;
       padding: 0;
@@ -14,45 +19,40 @@
       height: 100%;
       overflow: hidden;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #000; /* only visible if app fails to render */
+      background: #000;
     }
 
-    /* APP (always visible, never display:none) */
-    #app {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background: url("./Assets/Menu-background.png") center/cover no-repeat;
-    }
+    /* ---------------- SPLASH ---------------- */
 
-    /* SPLASH overlay */
     #splash {
       position: fixed;
       inset: 0;
       z-index: 9999;
       background: #000;
-      opacity: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: opacity 350ms ease;
     }
-    #splash.hidden { opacity: 0; pointer-events: none; }
 
-    #splashImg, #splashVideo {
+    #splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #splash img {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      background: #000;
+      user-select: none;
+      pointer-events: none;
     }
-
-    #splashImg { pointer-events: none; user-select: none; -webkit-user-drag: none; }
-    #splashVideo { display: none; }
 
     #tapText {
       position: absolute;
-      left: 50%;
       bottom: 48px;
-      transform: translateX(-50%);
       padding: 14px 30px;
       font-size: 32px;
       font-weight: 900;
@@ -66,24 +66,126 @@
     }
 
     @keyframes pulse {
-      0% { transform: translateX(-50%) scale(1); opacity: .85; }
-      50% { transform: translateX(-50%) scale(1.08); opacity: 1; }
-      100% { transform: translateX(-50%) scale(1); opacity: .85; }
+      0%   { transform: scale(1);    opacity: .85; }
+      50%  { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1);    opacity: .85; }
     }
+
+    /* ---------------- APP ---------------- */
+
+    #app {
+      width: 100%;
+      height: 100%;
+      display: none;
+      background-image: url("./Assets/Menu-background.png");
+      background-size: cover;
+      background-position: center;
+      padding: 24px;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 48px;
+      font-weight: 900;
+      color: #FFD84D;
+      text-shadow: 0 4px 0 #C97A00, 0 10px 20px rgba(0,0,0,.35);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 32px;
+      color: #2b2b2b;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.88);
+      border-radius: 20px;
+      padding: 28px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0,0,0,.2);
+      cursor: pointer;
+      transition: transform .12s ease;
+    }
+
+    .card:active {
+      transform: scale(0.97);
+    }
+
+    .difficulty {
+      position: absolute;
+      bottom: 18px;
+      right: 18px;
+      background: rgba(255,255,255,.9);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .dots {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      justify-content: center;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+
+    .green { background: #3cb371; }
+    .yellow { background: #ffd84d; }
+    .red { background: #e5533d; }
   </style>
 </head>
 
 <body>
-  <!-- Menu area (always visible behind splash) -->
-  <div id="app"></div>
 
-  <!-- Splash sits on top -->
-  <div id="splash" aria-label="Start">
-    <img id="splashImg" src="./Assets/Splash.PNG?v=1" alt="Maccy Match">
-    <video id="splashVideo" playsinline webkit-playsinline preload="auto"></video>
+  <!-- Splash -->
+  <div id="splash">
+    <img src="./Assets/Splash.PNG" alt="Maccy Match">
     <div id="tapText">Tap to Start</div>
   </div>
 
-  <script src="./app.js?v=1"></script>
+  <!-- App -->
+  <div id="app">
+    <div class="title">Maccy Match!</div>
+    <div class="subtitle">Pick a Category</div>
+
+    <div class="grid">
+      <div class="card">🐾 Animals</div>
+      <div class="card">🚗 Vehicles</div>
+      <div class="card">🍎 Food</div>
+      <div class="card">🔢 Numbers</div>
+      <div class="card">🎨 Colours</div>
+      <div class="card">🔷 Shapes</div>
+    </div>
+
+    <div class="difficulty">
+      Difficulty
+      <div class="dots">
+        <div class="dot green"></div>
+        <div class="dot yellow"></div>
+        <div class="dot red"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
 </body>
 </html>
