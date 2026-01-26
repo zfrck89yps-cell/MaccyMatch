@@ -18,29 +18,62 @@ window.addEventListener("load", () => {
 
   const splash = document.getElementById("splash");
   const tapText = document.getElementById("tapText");
+  const img = document.getElementById("splashImg");
   const video = document.getElementById("splashVideo");
 
+  let started = false;
+  let safetyTimer = null;
+
   const start = async () => {
+    if (started) return;
+    started = true;
+
     tapText.style.display = "none";
 
-    // IMPORTANT: exact filename & path
-    video.src = "/MaccyMatch/Assets/Splash.mp4?v=9";
+    // IMPORTANT: exact filename & path (match your repo exactly)
+    video.src = "/MaccyMatch/Assets/Splash.mp4?v=10";
     video.currentTime = 0;
+
+    // show the video *above* the image
     video.style.display = "block";
+    video.style.zIndex = "2";
+    img.style.zIndex = "1";
+
+    // Try with sound first
     video.muted = false;
     video.volume = 1.0;
+
+    // When metadata loads, schedule a safety hide based on real duration
+    const setSafetyFromDuration = () => {
+      if (!isFinite(video.duration) || video.duration <= 0) return;
+      clearTimeout(safetyTimer);
+      // duration in ms + little buffer
+      safetyTimer = setTimeout(hideSplash, Math.ceil(video.duration * 1000) + 400);
+    };
+
+    video.addEventListener("loadedmetadata", setSafetyFromDuration, { once: true });
+    video.addEventListener("ended", () => {
+      clearTimeout(safetyTimer);
+      hideSplash();
+    }, { once: true });
 
     try {
       await video.play();
     } catch (e) {
-      hideSplash();
+      // iOS Safari likely blocked autoplay-with-sound
+      // Keep splash up, show message, and allow another tap attempt
+      started = false;
+      tapText.textContent = "Tap again";
+      tapText.style.display = "block";
+
+      // Hide video layer so you don't get black
+      video.pause();
+      video.style.display = "none";
+
       return;
     }
-
-    video.addEventListener("ended", hideSplash, { once: true });
-    setTimeout(hideSplash, 4500); // safety
   };
 
-  splash.addEventListener("click", start, { once: true });
-  splash.addEventListener("touchstart", start, { once: true });
+  // Use only ONE event to avoid double-trigger issues on iOS
+  splash.addEventListener("pointerup", start);
 });
