@@ -1,19 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Maccy Match</title>
-
   <style>
-    html, body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      overflow: hidden;
-      background: #000;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }
+    :root{ --card: rgba(255,255,255,.88); --stroke: rgba(255,255,255,.55); --text:#1b1b1b; }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html,body{ margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif; color:var(--text); }
 
+    /* Splash */
     #splash {
       position: fixed;
       inset: 0;
@@ -27,16 +23,16 @@
     }
     #splash.hidden { opacity: 0; pointer-events: none; }
 
+    /* Make the image not capture pointer events (so the splash container gets the event) */
     #splashImg, #splashVideo {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      background: #000;
     }
-
-    #splashVideo { display: none; }
+    #splashImg { pointer-events: none; user-select: none; -webkit-user-drag: none; }
+    #splashVideo { display: none; background: #000; }
 
     #tapText {
       position: absolute;
@@ -50,6 +46,7 @@
       text-shadow: 0 3px 0 #C97A00, 0 10px 18px rgba(0,0,0,0.35);
       animation: pulse 1.6s ease-in-out infinite;
       user-select: none;
+      pointer-events: none; /* let the container receive taps */
     }
     @keyframes pulse {
       0% { transform: scale(1); opacity: .85; }
@@ -57,19 +54,23 @@
       100% { transform: scale(1); opacity: .85; }
     }
 
-    #app { width: 100%; height: 100%; background: #FFF4CC; }
+    /* App area (hidden behind splash initially) */
+    #app { width: 100%; height: 100%; background: #FFF4CC; display: none; }
+
+    /* Simple accessibility focus style */
+    #splash:focus { outline: 4px solid rgba(255,255,255,.12); }
   </style>
 </head>
-
 <body>
-  <div id="splash">
-    <img id="splashImg" src="/MaccyMatch/Assets/Splash.PNG?v=9" alt="Maccy Match">
-    <video id="splashVideo" playsinline webkit-playsinline preload="auto"></video>
+  <div id="splash" tabindex="0" role="button" aria-label="Start game (tap or press Enter)">
+    <!-- Use a relative path so video can derive its path from the image src (keeps case & folder exact) -->
+    <img id="splashImg" src="./Assets/Splash.PNG?v=9" alt="Maccy Match">
+    <video id="splashVideo" playsinline webkit-playsinline preload="metadata"></video>
     <div id="tapText">Tap to Start</div>
   </div>
 
-  <div id="app"></div>
+  <div id="app" aria-live="polite"></div>
 
-  <script src="app.js?v=9"></script>
+  <script src="./app.js?v=9"></script>
 </body>
 </html>
