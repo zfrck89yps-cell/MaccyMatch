@@ -6,13 +6,6 @@
   <title>Maccy Match</title>
 
   <style>
-    :root{
-      --shadow: rgba(0,0,0,.25);
-      --glass: rgba(255,255,255,.82);
-      --stroke: rgba(255,255,255,.55);
-      --text: #1a1a1a;
-    }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
       margin: 0; padding: 0;
@@ -22,7 +15,7 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    /* SPLASH */
+    /* Splash */
     #splash {
       position: fixed;
       inset: 0;
@@ -60,7 +53,7 @@
       text-shadow: 0 3px 0 #C97A00, 0 10px 18px rgba(0,0,0,0.35);
       animation: pulse 1.6s ease-in-out infinite;
       user-select: none;
-      pointer-events: none; /* taps go to #splash */
+      pointer-events: none;
     }
     @keyframes pulse {
       0% { transform: scale(1); opacity: .85; }
@@ -68,24 +61,42 @@
       100% { transform: scale(1); opacity: .85; }
     }
 
-    /* APP ROOT */
+    /* App root: give a visible fallback so it never looks "broken" */
     #app {
       width: 100%;
       height: 100%;
-      background: #000;
+      background: #111;
+      display: block;
+    }
+
+    /* Tiny debug label (if you see this after splash, JS is running) */
+    #debugBadge{
+      position: fixed;
+      left: 10px;
+      bottom: 10px;
+      z-index: 5;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,.9);
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 10px;
+      pointer-events: none;
+      display:none;
     }
   </style>
 </head>
 
 <body>
   <div id="splash" tabindex="0" role="button" aria-label="Tap to start">
-    <img id="splashImg" src="./Assets/Splash.PNG?v=1" alt="Maccy Match">
+    <img id="splashImg" src="./Assets/Splash.PNG?v=2" alt="Maccy Match">
     <video id="splashVideo" playsinline webkit-playsinline preload="auto"></video>
     <div id="tapText">Tap to Start</div>
   </div>
 
   <div id="app"></div>
+  <div id="debugBadge">JS running</div>
 
-  <script src="./app.js?v=1"></script>
+  <script src="./app.js?v=2"></script>
 </body>
 </html>
