@@ -1,17 +1,45 @@
 // Improved startup flow: keep PNG until video is actually playing, robust fallbacks,
-// and remove duplicate menu headers (Menu-background contains the title).
+// remove duplicate menu headers (Menu-background contains the title),
+// and use Animals.PNG as the Animals category card with 5 placeholders.
 function renderMenu() {
   const app = document.getElementById("app");
   app.className = "menu";
+
   app.innerHTML = `
     <div class="menuWrap">
-      <div class="grid">
-        <button class="cardBtn" data-cat="animals"><span class="emoji">🐾</span>Animals</button>
-        <button class="cardBtn" data-cat="vehicles"><span class="emoji">🚗</span>Vehicles</button>
-        <button class="cardBtn" data-cat="food"><span class="emoji">🍎</span>Food</button>
-        <button class="cardBtn" data-cat="numbers"><span class="emoji">🔢</span>Numbers</button>
-        <button class="cardBtn" data-cat="colours"><span class="emoji">🎨</span>Colours</button>
-        <button class="cardBtn" data-cat="shapes"><span class="emoji">🔷</span>Shapes</button>
+      <!-- Grid starts lower because the title is baked into Menu-background.png -->
+      <div class="grid" style="margin-top:22vh;">
+        
+        <!-- Animals category uses your image card -->
+        <button class="cardBtn catCard" id="catAnimals" aria-label="Animals">
+          <img
+            class="catImg"
+            src="./Assets/Animals.PNG"
+            alt="Animals"
+          />
+        </button>
+
+        <!-- 5 placeholders (same size) -->
+        <button class="cardBtn catCard placeholder" disabled aria-label="Vehicles (coming soon)">
+          <span class="phText">Vehicles</span>
+        </button>
+
+        <button class="cardBtn catCard placeholder" disabled aria-label="Food (coming soon)">
+          <span class="phText">Food</span>
+        </button>
+
+        <button class="cardBtn catCard placeholder" disabled aria-label="Numbers (coming soon)">
+          <span class="phText">Numbers</span>
+        </button>
+
+        <button class="cardBtn catCard placeholder" disabled aria-label="Colours (coming soon)">
+          <span class="phText">Colours</span>
+        </button>
+
+        <button class="cardBtn catCard placeholder" disabled aria-label="Shapes (coming soon)">
+          <span class="phText">Shapes</span>
+        </button>
+
       </div>
     </div>
 
@@ -27,18 +55,51 @@ function renderMenu() {
     </div>
   `;
 
-  app.querySelectorAll(".cardBtn").forEach(btn => {
-    btn.addEventListener("click", () => alert(`Category: ${btn.dataset.cat}`));
+  // Link Animals card to begin
+  document.getElementById("catAnimals").addEventListener("click", () => {
+    // For now: always start Animals Easy (6 cards / 3 pairs) as you requested
+    if (typeof startAnimalsEasy === "function") {
+      startAnimalsEasy();
+    } else {
+      alert("startAnimalsEasy() not found yet.");
+    }
   });
 
+  // Keep difficulty settings working exactly as before
   const saved = localStorage.getItem("mm_difficulty") || "easy";
   setDifficulty(saved);
+
   app.querySelectorAll(".dot").forEach(dot => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
       setDifficulty(dot.dataset.level);
     });
   });
+
+  // Minimal extra styles for the image-card + placeholders (won’t affect your existing CSS)
+  if (!document.getElementById("menuExtraStyle")) {
+    const style = document.createElement("style");
+    style.id = "menuExtraStyle";
+    style.textContent = `
+      .catCard { padding: 0; overflow: hidden; }
+      .catImg { width: 100%; height: 100%; object-fit: cover; display:block; border-radius: 16px; }
+
+      .placeholder{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background: rgba(255,255,255,0.65);
+        border: 2px solid rgba(255,255,255,0.65);
+        border-radius: 16px;
+        color: rgba(0,0,0,0.55);
+        font-weight: 900;
+        font-size: 22px;
+      }
+      .placeholder:disabled { opacity: 0.75; }
+      .phText { padding: 10px 14px; }
+    `;
+    document.head.appendChild(style);
+  }
 }
 
 function setDifficulty(level) {
