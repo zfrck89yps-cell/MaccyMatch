@@ -41,6 +41,36 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      #tapOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 48px;
+  cursor: pointer;
+}
+
+#tapText {
+  font-size: 32px;
+  font-weight: 900;
+  color: #FFD84D;
+  text-shadow:
+    0 3px 0 #C97A00,
+    0 6px 12px rgba(0,0,0,0.4);
+  background: rgba(255, 180, 0, 0.15);
+  padding: 14px 28px;
+  border-radius: 999px;
+  animation: tapPulse 1.6s ease-in-out infinite;
+  user-select: none;
+}
+
+@keyframes tapPulse {
+  0%   { transform: scale(1);   opacity: 0.85; }
+  50%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1);   opacity: 0.85; }
+}
     }
 
     #splash video {
@@ -65,15 +95,18 @@
 
   <!-- SPLASH VIDEO -->
   <div id="splash" aria-hidden="true">
-    <video
-      id="splashVideo"
-      src="/MaccyMatch/Assets/Splash.mp4?v=2"
-      autoplay
-      muted
-      playsinline
-      preload="auto">
-    </video>
+  <video
+    id="splashVideo"
+    src="/MaccyMatch/Assets/Splash.mp4?v=3"
+    preload="auto"
+    playsinline
+    webkit-playsinline
+  ></video>
+
+  <div id="tapOverlay">
+    <div id="tapText">Tap to Start</div>
   </div>
+</div>
 
   <!-- APP -->
   <div id="app"></div>
