@@ -2,8 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
   <title>Maccy Match</title>
+
+  <meta name="theme-color" content="#FFD84D">
 
   <style>
     html, body {
@@ -11,51 +15,66 @@
       padding: 0;
       width: 100%;
       height: 100%;
-      background: #ffd500;
       overflow: hidden;
+      background: #FFD84D;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    /* Splash container */
+    /* SPLASH */
     #splash {
       position: fixed;
       inset: 0;
       z-index: 9999;
       background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 350ms ease;
     }
 
-    /* Both videos */
-    #idleVideo,
-    #splashVideo {
-      position: absolute;
-      inset: 0;
+    #splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #splash img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    /* Splash video hidden until tap */
-    #splashVideo {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* Full-screen tap catcher */
-    #tapOverlay {
+    /* Tap to Start */
+    #tapText {
       position: absolute;
-      inset: 0;
-      z-index: 10000;
+      bottom: 48px;
+      padding: 14px 30px;
+      font-size: 32px;
+      font-weight: 900;
+      color: #FFD84D;
+      background: rgba(255, 180, 0, 0.15);
+      border-radius: 999px;
+      text-shadow:
+        0 3px 0 #C97A00,
+        0 10px 18px rgba(0,0,0,0.35);
+      animation: pulse 1.6s ease-in-out infinite;
+      user-select: none;
     }
 
-    /* App / menu */
+    @keyframes pulse {
+      0%   { transform: scale(1); opacity: 0.85; }
+      50%  { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.85; }
+    }
+
+    /* APP */
     #app {
-      position: relative;
       width: 100%;
       height: 100%;
-      background: #ffd500;
+      background: #FFF4CC;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont;
     }
   </style>
 </head>
@@ -64,29 +83,11 @@
 
   <!-- SPLASH -->
   <div id="splash">
-    <video
-      id="idleVideo"
-      src="/MaccyMatch/Assets/Idle.mp4"
-      autoplay
-      muted
-      loop
-      playsinline
-      webkit-playsinline
-      preload="auto">
-    </video>
-
-    <video
-      id="splashVideo"
-      src="/MaccyMatch/Assets/Splash.mp4"
-      playsinline
-      webkit-playsinline
-      preload="auto">
-    </video>
-
-    <div id="tapOverlay"></div>
+    <img src="/MaccyMatch/Assets/splash.PNG" alt="Maccy Match">
+    <div id="tapText">Tap to Start</div>
   </div>
 
-  <!-- MAIN APP -->
+  <!-- APP -->
   <div id="app"></div>
 
   <script src="app.js"></script>
