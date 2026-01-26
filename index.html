@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  />
 
-  <!-- iOS Home Screen icon (THIS is what fixes the black “M”) -->
+  <!-- iOS Home Screen icon -->
   <link rel="apple-touch-icon" href="Assets/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Maccy Match">
@@ -14,9 +16,12 @@
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
     html, body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
       background: #000;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -31,13 +36,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 1;
       transition: opacity 350ms ease;
       touch-action: manipulation;
     }
     #splash.hidden { opacity: 0; pointer-events: none; }
 
-    #splashImg, #splashVideo {
+    #splashImg,
+    #splashVideo {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -45,7 +50,7 @@
       object-fit: cover;
       background: #000;
     }
-    #splashImg { pointer-events: none; user-select: none; -webkit-user-drag: none; }
+
     #splashVideo { display: none; }
 
     #tapText {
@@ -59,9 +64,9 @@
       border-radius: 999px;
       text-shadow: 0 3px 0 #C97A00, 0 10px 18px rgba(0,0,0,0.35);
       animation: pulse 1.6s ease-in-out infinite;
-      user-select: none;
-      pointer-events: none; /* important: tap goes to #splash */
+      pointer-events: none;
     }
+
     @keyframes pulse {
       0% { transform: scale(1); opacity: .85; }
       50% { transform: scale(1.08); opacity: 1; }
@@ -72,12 +77,10 @@
     #app {
       width: 100%;
       height: 100%;
-      display: none; /* shown after splash ends */
+      display: none;
       position: relative;
-      background: #000;
     }
 
-    /* Menu background image (your file) */
     #app.menu {
       background-image: url("./Assets/Menu-background.png");
       background-size: cover;
@@ -85,13 +88,14 @@
       background-repeat: no-repeat;
     }
 
+    /* category layout */
     .menuWrap {
       position: absolute;
       inset: 0;
       display: flex;
-      align-items: flex-start;
       justify-content: center;
-      padding: 140px 48px 80px; /* leaves space for the baked-in title */
+      align-items: flex-start;
+      padding-top: 25vh; /* ~¼ down screen */
     }
 
     .grid {
@@ -101,39 +105,32 @@
       gap: 22px;
     }
 
-    .cardBtn {
+    .catBtn {
       border: none;
+      padding: 0;
+      background: none;
       border-radius: 18px;
-      padding: 22px 20px;
-      font-size: 28px;
-      font-weight: 900;
-      background: rgba(255,255,255,0.78);
-      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
       cursor: pointer;
     }
-    .cardBtn:active { transform: scale(0.98); }
 
-    .emoji { font-size: 34px; }
-
-    /* scroll hint arrows bottom-left */
-    .scrollHint {
-      position: absolute;
-      left: 18px;
-      bottom: 18px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: rgba(0,0,0,0.25);
-      color: rgba(255,255,255,0.9);
-      font-size: 22px;
-      font-weight: 800;
-      user-select: none;
+    .catBtn img {
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+      display: block;
     }
 
-    /* difficulty bottom-right */
+    .catBtn:active img {
+      transform: scale(0.98);
+    }
+
+    .placeholder {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    /* difficulty */
     .difficulty {
       position: absolute;
       right: 18px;
@@ -144,25 +141,31 @@
       box-shadow: 0 10px 24px rgba(0,0,0,0.18);
       display: grid;
       gap: 8px;
-      user-select: none;
     }
+
     .difficultyTitle {
       font-weight: 900;
       font-size: 16px;
-      opacity: .9;
       text-align: center;
     }
-    .dots { display: flex; gap: 10px; justify-content: center; }
+
+    .dots {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
     .dot {
       width: 16px;
       height: 16px;
       border-radius: 999px;
-      border: 3px solid rgba(255,255,255,0.9);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      border: 3px solid #fff;
+      opacity: 0.5;
       cursor: pointer;
-      opacity: 0.55;
     }
-    .dot.active { opacity: 1; transform: scale(1.05); }
+
+    .dot.active { opacity: 1; }
+
     .g { background: #35d05a; }
     .y { background: #ffd84d; }
     .r { background: #ff4d4d; }
@@ -171,20 +174,40 @@
 
 <body>
   <!-- Splash -->
-  <div id="splash" role="button" aria-label="Tap to start">
-    <!-- IMPORTANT: your exact filenames -->
-    <img id="splashImg" src="./Assets/Splash.PNG?v=1" alt="Maccy Match">
-    <video id="splashVideo"
-           playsinline
-           webkit-playsinline
-           preload="auto"
-           src="./Assets/Splash.mp4?v=1"></video>
+  <div id="splash">
+    <img id="splashImg" src="./Assets/Splash.PNG" alt="Maccy Match">
+    <video id="splashVideo" playsinline webkit-playsinline preload="auto"></video>
     <div id="tapText">Tap to Start</div>
   </div>
 
   <!-- App -->
-  <div id="app"></div>
+  <div id="app" class="menu">
+    <div class="menuWrap">
+      <div class="grid">
+        <!-- Animals (live) -->
+        <button class="catBtn" id="animalsBtn">
+          <img src="./Assets/Animals.PNG" alt="Animals">
+        </button>
 
-  <script src="./app.js?v=1"></script>
+        <!-- Placeholders -->
+        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
+        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
+        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
+        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
+        <div class="catBtn placeholder"><img src="./Assets/Animals.PNG" alt=""></div>
+      </div>
+    </div>
+
+    <div class="difficulty">
+      <div class="difficultyTitle">Difficulty</div>
+      <div class="dots">
+        <div class="dot g" data-level="easy"></div>
+        <div class="dot y" data-level="medium"></div>
+        <div class="dot r" data-level="hard"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js?v=2"></script>
 </body>
 </html>
