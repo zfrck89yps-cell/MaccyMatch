@@ -73,12 +73,12 @@
       height: 100%;
       display: none;
       position: relative;
-      overflow: hidden;
       background: #000;
+      overflow: hidden;
     }
 
     /* Match menu background */
-    #app.matchMenu {
+    #app.menu {
       background-image: url("./Assets/Menu-background.png");
       background-size: cover;
       background-position: center;
@@ -93,7 +93,7 @@
       background-repeat: no-repeat;
     }
 
-    /* Game background (optional) */
+    /* Game background */
     #app.game {
       background-image: url("./Assets/Game-background.png");
       background-size: cover;
@@ -101,13 +101,13 @@
       background-repeat: no-repeat;
     }
 
-    /* ---------- MENU GRID ---------- */
+    /* ---------- MENU LAYOUT ---------- */
     .menuWrap {
       position: absolute;
       inset: 0;
       display: flex;
       justify-content: center;
-      padding: 32vh 42px 110px;
+      padding: 32vh 42px 110px; /* card block starts lower */
     }
 
     .menuGrid {
@@ -150,8 +150,23 @@
     }
     .placeholder:disabled { opacity: 0.85; cursor: default; }
 
-    /* ---------- MODE BUTTONS ---------- */
-    .modeBtn {
+    /* scroll hint bottom-left */
+    .scrollHint {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.9);
+      font-size: 22px;
+      font-weight: 800;
+      user-select: none;
+      z-index: 5;
+    }
+
+    /* ---------- CORNER MODE BUTTONS ---------- */
+    .cornerBtn {
       position: fixed;
       border: none;
       background: transparent;
@@ -159,24 +174,35 @@
       margin: 0;
       cursor: pointer;
       z-index: 50;
-      width: 300px;
-      height: 300px;
+      width: 240px;   /* adjust size here */
+      height: 240px;  /* adjust size here */
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
     }
-    .modeBtn:active { transform: scale(0.98); }
-
-    .modeBtn img {
+    .cornerBtn:active { transform: scale(0.98); }
+    .cornerBtn img {
       width: 100%;
       height: 100%;
       object-fit: contain;
       display: block;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+      pointer-events: none;
     }
 
-    /* Memory button bottom-right */
-    .modeBtn.right { right: 0; bottom: 0; }
+    /* Memory button = bottom-right */
+    .memoryBtn {
+      right: 0;
+      bottom: 0;
+      transform-origin: bottom right;
+    }
 
-    /* Match button bottom-left */
-    .modeBtn.left { left: 0; bottom: 0; }
+    /* Match button = bottom-left */
+    .matchBtn {
+      left: 0;
+      bottom: 0;
+      transform-origin: bottom left;
+    }
+
+    /* If you want them pushed even LOWER into the corner, use negative */
+    /* Example: bottom: -10px; right: -10px; */
 
     /* ---------- GAME LAYOUT ---------- */
     .gameWrap {
@@ -190,9 +216,13 @@
     .gameGrid {
       width: min(1100px, 92vw);
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, 1fr); /* 8 cards = 4x2 for memory */
       gap: 16px;
       align-content: start;
+    }
+
+    .gameGrid.matchGrid {
+      grid-template-columns: repeat(3, 1fr); /* 6 cards = 3x2 for match */
     }
 
     .gameCard {
@@ -207,6 +237,7 @@
       width: 100%;
       position: relative;
       outline: none;
+      transform: translateZ(0);
     }
 
     .gameCard img {
@@ -216,14 +247,12 @@
       display: block;
     }
 
-    /* Memory (face-down) */
+    /* ---------- MEMORY FLIP (simple, reliable) ---------- */
+    .cardInner { position: absolute; inset: 0; border-radius: 22px; overflow: hidden; }
+    .cardFace { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .cardFront img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
     .cardBack {
-      position: absolute;
-      inset: 0;
-      border-radius: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       background: rgba(255,255,255,0.35);
       backdrop-filter: blur(2px);
       -webkit-backdrop-filter: blur(2px);
@@ -236,35 +265,30 @@
       text-shadow: 0 2px 0 rgba(255,255,255,0.35);
     }
 
-    .gameCard .frontImg { display: none; }
-    .gameCard.flipped .frontImg { display: block; }
+    .gameCard .cardFront { display: none; }
     .gameCard.flipped .cardBack { display: none; }
+    .gameCard.flipped .cardFront { display: block; }
 
-    .gameCard.selected {
-      outline: 6px solid rgba(255,255,255,0.85);
-      transform: scale(1.01);
-    }
+    .gameCard.matched { pointer-events: none; outline: 6px solid rgba(255,255,255,0.55); }
 
-    .gameCard.matched {
-      pointer-events: none;
-      outline: 6px solid rgba(255,255,255,0.55);
-      opacity: 0.85;
-    }
-
-    /* Smash overlay */
-    .smashLayer {
+    /* ---------- BACK BUTTON (game page) ---------- */
+    .backBtn {
       position: fixed;
-      inset: 0;
-      z-index: 9998;
-      pointer-events: none;
+      left: 14px;
+      top: 14px;
+      z-index: 60;
+      border: none;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 20px;
+      font-weight: 900;
+      background: rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.95);
+      cursor: pointer;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
     }
-    .smashClone {
-      position: absolute;
-      border-radius: 22px;
-      overflow: hidden;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-      will-change: transform;
-    }
+    .backBtn:active { transform: scale(0.98); }
 
     /* Win overlay */
     .winOverlay {
@@ -297,6 +321,7 @@
 </head>
 
 <body>
+  <!-- Splash -->
   <div id="splash" role="button" aria-label="Tap to start">
     <img id="splashImg" src="./Assets/Splash.PNG?v=99" alt="Maccy Match">
     <video id="splashVideo"
@@ -307,8 +332,10 @@
     <div id="tapText">Tap to Start</div>
   </div>
 
+  <!-- App -->
   <div id="app"></div>
 
+  <!-- Confetti -->
   <canvas id="confettiCanvas"></canvas>
 
   <script src="./app.js?v=99"></script>
