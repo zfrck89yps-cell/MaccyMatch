@@ -102,7 +102,7 @@
       justify-content: center;
 
       /* starts ~1/4 down (below baked-in title) */
-      padding: 40vh 42px 90px;
+      padding: 26vh 42px 90px;
     }
 
     .menuGrid {
@@ -197,64 +197,56 @@
     .r { background: #ff4d4d; }
 
     /* ---------- GAME LAYOUT ---------- */
-/* ---------- GAME LAYOUT ---------- */
-.gameWrap {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: center;
+    .gameWrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
 
-  /* push grid slightly down, but not huge */
-  padding: 18vh 32px 48px;
-}
+      /* starts ~1/5 down */
+      padding: 18vh 42px 120px; /* extra bottom space so difficulty never overlaps */
+    }
 
-.gameGrid {
-  /* 🔑 THIS LINE controls card size */
-  width: min(900px, 88vw);
+    .gameGrid {
+      width: min(980px, 92vw);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      align-content: start;
+    }
 
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+    .gameCard {
+      border: none;
+      border-radius: 22px;
+      padding: 0;
+      background: rgba(255,255,255,0.12);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      position: relative;
+      outline: none;
+      transform: translateZ(0);
+    }
 
-  /* tighter gaps = smaller overall grid */
-  gap: 16px;
+    .gameCard img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-  align-content: start;
-}
-.gameCard {
-  border: none;
-  border-radius: 22px;
-  padding: 0;
-  background: rgba(255,255,255,0.18);
-  box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-  overflow: hidden;
-  cursor: pointer;
+    .gameCard.selected {
+      outline: 6px solid rgba(255,255,255,0.85);
+      transform: scale(1.01);
+    }
 
-  /* KEY FIX: cards are shorter so 3x2 fits */
-  aspect-ratio: 1 / 1;
-
-  width: 100%;
-  position: relative;
-  outline: none;
-  transform: translateZ(0);
-}
-
-.gameCard img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.gameCard.selected {
-  outline: 6px solid rgba(255,255,255,0.85);
-  transform: scale(1.01);
-}
-
-.gameCard.matched {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 200ms ease;
-}
+    .gameCard.matched {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
 
     /* Smash overlay */
     .smashLayer {
