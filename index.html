@@ -17,9 +17,57 @@ html,body{
   width:100%;
   height:100%;
   overflow:hidden;
+  background:#000;
   font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
+/* ---------- SPLASH ---------- */
+#splash{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:1;
+  transition:opacity 350ms ease;
+  touch-action:manipulation;
+}
+#splash.hidden{ opacity:0; pointer-events:none; }
+
+#splashImg,#splashVideo{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  background:#000;
+}
+#splashImg{ pointer-events:none; user-select:none; -webkit-user-drag:none; }
+#splashVideo{ display:none; }
+
+#tapText{
+  position:absolute;
+  bottom:48px;
+  padding:14px 30px;
+  font-size:32px;
+  font-weight:900;
+  color:#FFD84D;
+  background:rgba(255,180,0,.18);
+  border-radius:999px;
+  text-shadow:0 3px 0 #C97A00, 0 10px 18px rgba(0,0,0,.35);
+  animation:pulse 1.6s ease-in-out infinite;
+  user-select:none;
+  pointer-events:none;
+}
+@keyframes pulse{
+  0%{ transform:scale(1); opacity:.85; }
+  50%{ transform:scale(1.08); opacity:1; }
+  100%{ transform:scale(1); opacity:.85; }
+}
+
+/* ---------- APP ---------- */
 #app{
   position:relative;
   width:100%;
@@ -47,14 +95,12 @@ html,body{
   justify-content:center;
   padding:32vh 42px 120px;
 }
-
 .menuGrid{
   width:min(1100px,92vw);
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:18px;
 }
-
 .catCardBtn{
   border:none;
   border-radius:22px;
@@ -98,14 +144,12 @@ html,body{
   justify-content:center;
   padding:22vh 42px 120px;
 }
-
 .gameGrid{
   width:min(1100px,92vw);
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:16px;
 }
-
 .gameCard{
   aspect-ratio:1/1;
   border:none;
@@ -144,7 +188,20 @@ html,body{
 </head>
 
 <body>
-<div id="app"></div>
-<script src="./app.js?v=1"></script>
+  <!-- Splash -->
+  <div id="splash" role="button" aria-label="Tap to start">
+    <img id="splashImg" src="./Assets/Splash.PNG?v=99" alt="Maccy Match">
+    <video id="splashVideo"
+           playsinline
+           webkit-playsinline
+           preload="auto"
+           src="./Assets/Splash.mp4?v=99"></video>
+    <div id="tapText">Tap to Start</div>
+  </div>
+
+  <!-- App -->
+  <div id="app"></div>
+
+  <script src="./app.js?v=99"></script>
 </body>
 </html>
