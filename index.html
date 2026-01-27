@@ -101,12 +101,12 @@
       display: flex;
       justify-content: center;
 
-      /* starts ~1/4 down (below baked-in title) */
-      padding: 26vh 42px 90px;
+      /* ✅ move menu cards down WITHOUT shrinking them */
+      padding: 28vh 42px 110px;
     }
 
     .menuGrid {
-      width: min(1000px, 92vw);
+      width: min(1100px, 92vw);
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 18px;
@@ -159,6 +159,7 @@
       font-size: 22px;
       font-weight: 800;
       user-select: none;
+      z-index: 5;
     }
 
     /* difficulty bottom-right */
@@ -196,22 +197,24 @@
     .y { background: #ffd84d; }
     .r { background: #ff4d4d; }
 
-    /* ---------- GAME LAYOUT ---------- */
+    /* ---------- GAME LAYOUT (8 cards) ---------- */
     .gameWrap {
       position: absolute;
       inset: 0;
       display: flex;
       justify-content: center;
 
-      /* starts ~1/5 down */
-      padding: 20vh 44vh 122px; /* extra bottom space so difficulty never overlaps */
+      /* ✅ move game cards down WITHOUT shrinking them */
+      padding: 22vh 42px 120px;
     }
 
     .gameGrid {
-      width: min(980px, 92vw);
+      width: min(1100px, 92vw);
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
+
+      /* ✅ 8 cards = 4 columns x 2 rows */
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
       align-content: start;
     }
 
