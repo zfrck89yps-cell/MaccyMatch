@@ -173,27 +173,32 @@
       --memoryBtnInset: 6px;  /* how tight into the corner */
     }
 
-    .memoryBtn {
-      position: fixed;
-      right: var(--memoryBtnInset);
-      bottom: var(--memoryBtnInset);
-      width: var(--memoryBtnSize);
-      height: var(--memoryBtnSize);
-      border: none;
-      background: transparent;
-      padding: 0;
-      margin: 0;
-      cursor: pointer;
-      z-index: 20;
-    }
-    .memoryBtn:active { transform: scale(0.98); }
-    .memoryBtn img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
-    }
+ .memoryBtn {
+  position: fixed;
+
+  right: -12px;     /* tuck tighter into the corner */
+  bottom: -40px;    /* THIS moves it further down */
+
+  width: 300px;
+  height: 300px;
+
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+
+  cursor: pointer;
+  z-index: 10;
+}
+
+.memoryBtn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+}
+  
 
     /* ---------- GAME LAYOUT (8 cards) ---------- */
     .gameWrap {
