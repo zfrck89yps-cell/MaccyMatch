@@ -197,56 +197,59 @@
     .r { background: #ff4d4d; }
 
     /* ---------- GAME LAYOUT ---------- */
-    .gameWrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
+.gameWrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
 
-      /* starts ~1/5 down */
-      padding: 22vh 42px 120px; /* extra bottom space so difficulty never overlaps */
-    }
+  /* Starts slightly lower than menu title, but fits on all screens */
+  padding: clamp(140px, 18vh, 220px) 36px 40px;
+}
 
-    .gameGrid {
-      width: min(980px, 92vw);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      align-content: start;
-    }
+.gameGrid {
+  width: min(1200px, 92vw);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;                 /* tighter spacing so cards fit */
+  align-content: start;
+}
 
-    .gameCard {
-      border: none;
-      border-radius: 22px;
-      padding: 0;
-      background: rgba(255,255,255,0.12);
-      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-      overflow: hidden;
-      cursor: pointer;
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      position: relative;
-      outline: none;
-      transform: translateZ(0);
-    }
+.gameCard {
+  border: none;
+  border-radius: 22px;
+  padding: 0;
+  background: rgba(255,255,255,0.18);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.22);
+  overflow: hidden;
+  cursor: pointer;
 
-    .gameCard img {
-      width: 90%;
-      height: 90%;
-      object-fit: cover;
-      display: block;
-    }
+  /* KEY FIX: cards are shorter so 3x2 fits */
+  aspect-ratio: 4 / 3;
 
-    .gameCard.selected {
-      outline: 6px solid rgba(255,255,255,0.85);
-      transform: scale(1.01);
-    }
+  width: 100%;
+  position: relative;
+  outline: none;
+  transform: translateZ(0);
+}
 
-    .gameCard.matched {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 200ms ease;
-    }
+.gameCard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gameCard.selected {
+  outline: 6px solid rgba(255,255,255,0.85);
+  transform: scale(1.01);
+}
+
+.gameCard.matched {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
 
     /* Smash overlay */
     .smashLayer {
