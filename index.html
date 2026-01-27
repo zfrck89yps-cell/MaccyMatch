@@ -168,16 +168,27 @@
 
     /* ---------- MEMORY BUTTON (bottom-right) ---------- */
 .memoryBtn {
-  position: absolute;
-  right: 6px;     /* tuck tighter into corner */
-  bottom: 6px;
-  width: 340px;   /* ~4× original 86px */
-  height: 340px;
+  position: fixed;      /* key change: fixed to viewport */
+  right: 0;
+  bottom: 0;
+
+  width: 300px;         /* keep your ~4× size */
+  height: 300px;
+
   border: none;
   background: transparent;
   padding: 0;
+  margin: 0;
+
   cursor: pointer;
-  z-index: 6;
+  z-index: 10;
+
+  .memoryBtn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
 }
     .memoryBtn:active { transform: scale(0.98); }
     .memoryBtn img {
