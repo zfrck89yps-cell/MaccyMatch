@@ -1,327 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-  <link rel="apple-touch-icon" href="Assets/apple-touch-icon.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Maccy Match">
+<link rel="apple-touch-icon" href="Assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Maccy Match">
 
-  <title>Maccy Match</title>
+<title>Maccy Match</title>
 
-  <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      overflow: hidden;
-      background: #000;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    /* ---------- SPLASH ---------- */
-    #splash {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 1;
-      transition: opacity 350ms ease;
-      touch-action: manipulation;
-    }
-    #splash.hidden { opacity: 0; pointer-events: none; }
-
-    #splashImg, #splashVideo {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      background: #000;
-    }
-    #splashImg { pointer-events: none; user-select: none; -webkit-user-drag: none; }
-    #splashVideo { display: none; }
-
-    #tapText {
-      position: absolute;
-      bottom: 48px;
-      padding: 14px 30px;
-      font-size: 32px;
-      font-weight: 900;
-      color: #FFD84D;
-      background: rgba(255, 180, 0, 0.18);
-      border-radius: 999px;
-      text-shadow: 0 3px 0 #C97A00, 0 10px 18px rgba(0,0,0,0.35);
-      animation: pulse 1.6s ease-in-out infinite;
-      user-select: none;
-      pointer-events: none;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: .85; }
-      50% { transform: scale(1.08); opacity: 1; }
-      100% { transform: scale(1); opacity: .85; }
-    }
-
-    /* ---------- APP ---------- */
-    #app {
-      width: 100%;
-      height: 100%;
-      display: none;
-      position: relative;
-      overflow: hidden;
-      background: #000;
-    }
-
-    /* Match menu background */
-    #app.menu {
-      background-image: url("./Assets/Menu-background.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-
-    /* Memory menu background */
-    #app.memoryMenu {
-      background-image: url("./Assets/Memory-menu.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-
-    /* Game background */
-    #app.game {
-      background-image: url("./Assets/Game-background.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-
-    /* ---------- MENU LAYOUT ---------- */
-    .menuWrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-
-      /* MOVE THE WHOLE GRID DOWN (increase 32vh -> 36vh etc) */
-      padding: 36vh 42px 110px;
-    }
-
-    .menuGrid {
-      width: min(1100px, 92vw);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      align-content: start;
-    }
-
-    .catCardBtn {
-      border: none;
-      border-radius: 22px;
-      padding: 0;
-      background: rgba(255,255,255,0.20);
-      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-      overflow: hidden;
-      cursor: pointer;
-      aspect-ratio: 16 / 9;
-      width: 100%;
-    }
-    .catCardBtn:active { transform: scale(0.99); }
-
-    .catImg {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,0.30);
-      border: 2px solid rgba(255,255,255,0.30);
-      color: rgba(0,0,0,0.55);
-      font-weight: 900;
-      font-size: 22px;
-    }
-    .placeholder:disabled { opacity: 0.85; cursor: default; }
-
-    /* scroll hint bottom-left */
-    .scrollHint {
-      position: absolute;
-      left: 18px;
-      bottom: 18px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: rgba(0,0,0,0.25);
-      color: rgba(255,255,255,0.9);
-      font-size: 22px;
-      font-weight: 800;
-      user-select: none;
-      z-index: 5;
-    }
-
-    /* ---------- MEMORY BUTTON (tight bottom-right) ---------- */
-    :root {
-      --memoryBtnSize: 280px; /* change this if you want bigger/smaller */
-      --memoryBtnInset: 6px;  /* how tight into the corner */
-    }
-
- .memoryBtn {
-  position: fixed;
-
-  right: -12px;     /* tuck tighter into the corner */
-  bottom: -40px;    /* THIS moves it further down */
-
-  width: 300px;
-  height: 300px;
-
-  border: none;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-
-  cursor: pointer;
-  z-index: 10;
+<style>
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
-.memoryBtn img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+#app{
+  position:relative;
+  width:100%;
+  height:100%;
+  display:none;
+  overflow:hidden;
 }
-  
 
-    /* ---------- GAME LAYOUT (8 cards) ---------- */
-    .gameWrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
+/* ---------- BACKGROUNDS ---------- */
+#app.matchMenu{
+  background:url("./Assets/Menu-background.png") center/cover no-repeat;
+}
+#app.memoryMenu{
+  background:url("./Assets/Memory-menu.png") center/cover no-repeat;
+}
+#app.game{
+  background:url("./Assets/Game-background.png") center/cover no-repeat;
+}
 
-      /* MOVE GAME GRID DOWN (increase 22vh if needed) */
-      padding: 24vh 42px 120px;
-    }
+/* ---------- MENU GRID ---------- */
+.menuWrap{
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  padding:32vh 42px 120px;
+}
 
-    .gameGrid {
-      width: min(1100px, 92vw);
-      display: grid;
-      grid-template-columns: repeat(4, 1fr); /* 8 = 4x2 */
-      gap: 16px;
-      align-content: start;
-    }
+.menuGrid{
+  width:min(1100px,92vw);
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+}
 
-    .gameCard {
-      border: none;
-      border-radius: 22px;
-      padding: 0;
-      background: rgba(255,255,255,0.12);
-      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-      overflow: hidden;
-      cursor: pointer;
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      position: relative;
-      outline: none;
-      transform: translateZ(0);
-    }
+.catCardBtn{
+  border:none;
+  border-radius:22px;
+  aspect-ratio:16/9;
+  background:rgba(255,255,255,.25);
+  cursor:pointer;
+  overflow:hidden;
+}
+.catCardBtn img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
 
-    /* Memory “flip” (simple + reliable) */
-    .cardFront { display: none; }
-    .gameCard.flipped .cardBack { display: none; }
-    .gameCard.flipped .cardFront { display: block; }
+/* ---------- MODE BUTTONS ---------- */
+.modeBtn{
+  position:fixed;
+  bottom:0;
+  width:240px;
+  height:240px;
+  background:none;
+  border:none;
+  padding:0;
+  cursor:pointer;
+  z-index:50;
+}
+.modeBtn img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.35));
+}
+.modeBtn.right{ right:0; }
+.modeBtn.left{ left:0; }
 
-    .cardFace {
-      position: absolute;
-      inset: 0;
-      border-radius: 22px;
-      overflow: hidden;
-    }
+/* ---------- GAME GRID ---------- */
+.gameWrap{
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  padding:22vh 42px 120px;
+}
 
-    .cardFront img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+.gameGrid{
+  width:min(1100px,92vw);
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+}
 
-    .cardBack {
-      background: rgba(255,255,255,0.35);
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .cardBack::after {
-      content: "M";
-      font-weight: 1000;
-      font-size: clamp(26px, 3vw, 44px);
-      color: rgba(0,0,0,0.25);
-      text-shadow: 0 2px 0 rgba(255,255,255,0.35);
-    }
+.gameCard{
+  aspect-ratio:1/1;
+  border:none;
+  border-radius:22px;
+  background:rgba(255,255,255,.15);
+  cursor:pointer;
+  overflow:hidden;
+  position:relative;
+}
 
-    .gameCard.matched {
-      pointer-events: none;
-      outline: 6px solid rgba(255,255,255,0.55);
-    }
+/* Memory flip */
+.cardFront,.cardBack{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.cardFront img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.cardBack{
+  background:rgba(255,255,255,.35);
+}
+.gameCard .cardFront{ display:none; }
+.gameCard.flipped .cardBack{ display:none; }
+.gameCard.flipped .cardFront{ display:block; }
 
-    /* Win overlay */
-    .winOverlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-    }
-    .winText {
-      font-size: clamp(42px, 6vw, 92px);
-      font-weight: 1000;
-      color: #FFD84D;
-      text-shadow: 0 5px 0 #C97A00, 0 16px 30px rgba(0,0,0,0.35);
-      padding: 18px 30px;
-      border-radius: 26px;
-      background: rgba(0,0,0,0.20);
-    }
-
-    /* Confetti canvas */
-    #confettiCanvas {
-      position: fixed;
-      inset: 0;
-      z-index: 9997;
-      pointer-events: none;
-    }
-  </style>
+.gameCard.matched{
+  pointer-events:none;
+  opacity:.35;
+}
+</style>
 </head>
 
 <body>
-  <!-- Splash -->
-  <div id="splash" role="button" aria-label="Tap to start">
-    <img id="splashImg" src="./Assets/Splash.PNG?v=99" alt="Maccy Match">
-    <video id="splashVideo"
-           playsinline
-           webkit-playsinline
-           preload="auto"
-           src="./Assets/Splash.mp4?v=99"></video>
-    <div id="tapText">Tap to Start</div>
-  </div>
-
-  <!-- App -->
-  <div id="app"></div>
-
-  <!-- Confetti -->
-  <canvas id="confettiCanvas"></canvas>
-
-  <script src="./app.js?v=99"></script>
+<div id="app"></div>
+<script src="./app.js?v=1"></script>
 </body>
 </html>
