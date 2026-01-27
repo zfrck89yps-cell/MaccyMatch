@@ -1,11 +1,11 @@
-// app.js (clean, no wrapper, so it can’t “silently die”)
-// Menu: 6 equal category cards (Animals image + 5 placeholders) using your existing CSS
-// Game (Animals Easy): 6 cards (3 pairs) FACE UP
-// Match: smash-to-centre + confetti
-// Wrong: nothing (just remove outlines after a moment)
-// Win: BIG "Well done!" + confetti, then 5s -> back to menu
+// app.js
+// - Menu: 6 equal category cards (Animals image + 5 placeholders)
+// - Game (Animals Easy): 6 cards (3 pairs) FACE UP
+// - Match: smash-to-centre + confetti
+// - Wrong: nothing (just remove outline after a moment)
+// - Win: BIG “Well done!” + confetti, then 5s -> back to menu
+// - Difficulty dots: still save/restore (for later)
 
-// ---------------- MENU ----------------
 function renderMenu() {
   const app = document.getElementById("app");
   if (!app) return;
@@ -41,11 +41,11 @@ function renderMenu() {
     </div>
   `;
 
-  // Animals starts game
+  // Link animals button
   const animalsBtn = document.getElementById("catAnimals");
-  if (animalsBtn) animalsBtn.onclick = startAnimalsEasy;
+  if (animalsBtn) animalsBtn.addEventListener("click", startAnimalsEasy);
 
-  // Difficulty dots (saved for later)
+  // Difficulty dots
   const saved = localStorage.getItem("mm_difficulty") || "easy";
   setDifficulty(saved);
 
@@ -64,7 +64,6 @@ function setDifficulty(level) {
   });
 }
 
-// ---------------- GAME: ANIMALS EASY ----------------
 function startAnimalsEasy() {
   const app = document.getElementById("app");
   if (!app) return;
@@ -97,12 +96,12 @@ function startAnimalsEasy() {
       <div class="dots">
         <div class="dot g" data-level="easy" title="Beginner"></div>
         <div class="dot y" data-level="medium" title="Intermediate"></div>
-        <div class="dot r" data-level="hard" title="Hard"></div>
+        <div class="dot r" data-level="hard"></div>
       </div>
     </div>
   `;
 
-  // Keep difficulty dots visible
+  // Keep dots visible + state
   const saved = localStorage.getItem("mm_difficulty") || "easy";
   setDifficulty(saved);
   app.querySelectorAll(".dot").forEach(dot => {
@@ -180,7 +179,6 @@ function startAnimalsEasy() {
   }
 }
 
-// ---------------- SMASH ANIMATION ----------------
 function playSmash(cardA, cardB, onDone) {
   const layer = document.createElement("div");
   layer.className = "smashLayer";
@@ -265,7 +263,6 @@ function makeClone(cardBtn, rect) {
   return clone;
 }
 
-// ---------------- CONFETTI (CANVAS) ----------------
 let confettiRAF = null;
 
 function burstConfetti(durationMs = 800) {
@@ -287,6 +284,7 @@ function burstConfetti(durationMs = 800) {
   const start = performance.now();
   const pieces = [];
   const count = 120;
+  const colors = ["#FFD84D", "#35D05A", "#4DA3FF", "#FF4D4D", "#FF7AD9", "#FFFFFF"];
 
   for (let i = 0; i < count; i++) {
     pieces.push({
@@ -296,11 +294,10 @@ function burstConfetti(durationMs = 800) {
       vy: 3 + Math.random() * 6,
       r: 3 + Math.random() * 5,
       a: Math.random() * Math.PI * 2,
-      va: (Math.random() - 0.5) * 0.3
+      va: (Math.random() - 0.5) * 0.3,
+      c: colors[(Math.random() * colors.length) | 0]
     });
   }
-
-  const colors = ["#FFD84D", "#35D05A", "#4DA3FF", "#FF4D4D", "#FF7AD9", "#FFFFFF"];
 
   function frame(t) {
     const elapsed = t - start;
@@ -315,7 +312,7 @@ function burstConfetti(durationMs = 800) {
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.a);
-      ctx.fillStyle = colors[(Math.random() * colors.length) | 0];
+      ctx.fillStyle = p.c;
       ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
       ctx.restore();
     }
@@ -332,7 +329,6 @@ function burstConfetti(durationMs = 800) {
   confettiRAF = requestAnimationFrame(frame);
 }
 
-// ---------------- UTIL ----------------
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = (Math.random() * (i + 1)) | 0;
@@ -353,7 +349,6 @@ function hideSplash() {
   setTimeout(() => splash.remove(), 400);
 }
 
-// ---------------- STARTUP ----------------
 window.addEventListener("load", () => {
   renderMenu();
   showApp();
@@ -384,10 +379,10 @@ window.addEventListener("load", () => {
     video.muted = false;
     video.volume = 1.0;
 
-    let endedAlready = false;
+    let ended = false;
     const endSplash = () => {
-      if (endedAlready) return;
-      endedAlready = true;
+      if (ended) return;
+      ended = true;
       hideSplash();
     };
 
