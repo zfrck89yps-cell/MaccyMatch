@@ -1,10 +1,12 @@
-// app.js (Match menu + Memory menu + Memory game 8 cards face-down)
-// - NO difficulty UI
-// - Memory button bottom-right opens memory menu
-// - Memory menu uses Memory-menu.png background
-// - Animals on memory menu -> 8-card memory game face-down
+// app.js
+// - Match menu (Menu-background.png) shows Memory-button.PNG bottom-right
+// - Memory menu (Memory-menu.png) shows Match-button.PNG bottom-left
+// - Match game (Animals): 6 cards face up, smash + confetti on match, win overlay
+// - Memory game (Animals): 8 cards face down, flip 2, wrong flips back, win overlay
+// - No difficulty settings
 
-function renderMatchMenu() {
+// ---------------- MENU: MATCH ----------------
+function renderMenu() {
   const app = document.getElementById("app");
   if (!app) return;
 
@@ -14,40 +16,32 @@ function renderMatchMenu() {
     <div class="menuWrap">
       <div class="menuGrid" aria-label="Categories">
 
-        <button class="catCardBtn" id="matchAnimals" aria-label="Animals">
+        <button class="catCardBtn" id="catAnimals" aria-label="Animals">
           <img class="catImg" src="./Assets/Animals.PNG" alt="Animals">
         </button>
 
-        <button class="catCardBtn placeholder" disabled>Vehicles</button>
-        <button class="catCardBtn placeholder" disabled>Food</button>
-        <button class="catCardBtn placeholder" disabled>Numbers</button>
-        <button class="catCardBtn placeholder" disabled>Colours</button>
-        <button class="catCardBtn placeholder" disabled>Shapes</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Vehicles (coming soon)">Vehicles</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Food (coming soon)">Food</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Numbers (coming soon)">Numbers</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Colours (coming soon)">Colours</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Shapes (coming soon)">Shapes</button>
+
       </div>
     </div>
 
     <div class="scrollHint">‹ ›</div>
 
-    <button class="memoryBtn" id="memoryBtn" aria-label="Maccy Memory">
+    <!-- MEMORY BUTTON (only on Match menu) -->
+    <button class="modeBtn" id="toMemory" aria-label="Go to Memory">
       <img src="./Assets/Memory-button.PNG" alt="Maccy Memory">
     </button>
   `;
 
-  // Match menu Animals (keep it doing something simple for now)
-  const matchAnimals = document.getElementById("matchAnimals");
-  if (matchAnimals) {
-    matchAnimals.addEventListener("click", () => {
-      // If you want Match mode later, wire it here.
-      // For now, send to memory menu to avoid confusion:
-      renderMemoryMenu();
-    });
-  }
-
-  // Go to Memory menu
-  const memoryBtn = document.getElementById("memoryBtn");
-  if (memoryBtn) memoryBtn.addEventListener("click", renderMemoryMenu);
+  document.getElementById("catAnimals")?.addEventListener("click", startAnimalsMatch);
+  document.getElementById("toMemory")?.addEventListener("click", renderMemoryMenu);
 }
 
+// ---------------- MENU: MEMORY ----------------
 function renderMemoryMenu() {
   const app = document.getElementById("app");
   if (!app) return;
@@ -56,72 +50,59 @@ function renderMemoryMenu() {
 
   app.innerHTML = `
     <div class="menuWrap">
-      <div class="menuGrid" aria-label="Memory Categories">
+      <div class="menuGrid" aria-label="Categories">
 
-        <button class="catCardBtn" id="memAnimals" aria-label="Animals">
+        <button class="catCardBtn" id="memAnimals" aria-label="Animals Memory">
           <img class="catImg" src="./Assets/Animals.PNG" alt="Animals">
         </button>
 
-        <button class="catCardBtn placeholder" disabled>Vehicles</button>
-        <button class="catCardBtn placeholder" disabled>Food</button>
-        <button class="catCardBtn placeholder" disabled>Numbers</button>
-        <button class="catCardBtn placeholder" disabled>Colours</button>
-        <button class="catCardBtn placeholder" disabled>Shapes</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Vehicles (coming soon)">Vehicles</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Food (coming soon)">Food</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Numbers (coming soon)">Numbers</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Colours (coming soon)">Colours</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Shapes (coming soon)">Shapes</button>
+
       </div>
     </div>
 
     <div class="scrollHint">‹ ›</div>
 
-    <!-- Optional: tap Memory button again returns to Match menu -->
-    <button class="memoryBtn" id="backToMatch" aria-label="Back to Match menu">
-      <img src="./Assets/Memory-button.PNG" alt="Back">
+    <!-- MATCH BUTTON (only on Memory menu) -->
+    <button class="modeBtn left" id="toMatch" aria-label="Go to Match">
+      <img src="./Assets/Match-button.PNG" alt="Maccy Match">
     </button>
   `;
 
-  const memAnimals = document.getElementById("memAnimals");
-  if (memAnimals) memAnimals.addEventListener("click", startMemoryAnimals);
-
-  const backBtn = document.getElementById("backToMatch");
-  if (backBtn) backBtn.addEventListener("click", renderMatchMenu);
+  document.getElementById("memAnimals")?.addEventListener("click", startAnimalsMemory);
+  document.getElementById("toMatch")?.addEventListener("click", renderMenu);
 }
 
-function startMemoryAnimals() {
+// ---------------- MATCH GAME (Animals - face up) ----------------
+function startAnimalsMatch() {
   const app = document.getElementById("app");
   if (!app) return;
 
   app.className = "game";
 
-  // 4 pairs = 8 cards (change these filenames to match your Assets exactly)
   const picks = [
-    { key: "cat",     src: "./Assets/Cat.png" },
-    { key: "dog",     src: "./Assets/Dog.png" },
-    { key: "duck",    src: "./Assets/Duck.png" },
-    { key: "lion",    src: "./Assets/Lion.png" }, // you have Lion.png in your list
+    { key: "cat",  src: "./Assets/Cat.png"  },
+    { key: "dog",  src: "./Assets/Dog.png"  },
+    { key: "duck", src: "./Assets/Duck.png" },
   ];
 
-  const deck = shuffle([...picks, ...picks].map((c, i) => ({ ...c, id: `${c.key}_${i}` })));
+  const cards = shuffle([...picks, ...picks].map((c, i) => ({ ...c, id: `${c.key}_${i}` })));
 
   app.innerHTML = `
     <div class="gameWrap">
-      <div class="gameGrid" id="gameGrid" aria-label="Maccy Memory">
-        ${deck.map(c => `
-          <button class="gameCard" data-key="${c.key}" data-id="${c.id}" aria-label="card">
-            <div class="cardFace cardBack"></div>
-            <div class="cardFace cardFront">
-              <img src="${c.src}" alt="${c.key}">
-            </div>
+      <div class="gameGrid" id="gameGrid" aria-label="Match the cards">
+        ${cards.map(c => `
+          <button class="gameCard" data-key="${c.key}" data-id="${c.id}" aria-label="${c.key}">
+            <img src="${c.src}" alt="${c.key}">
           </button>
         `).join("")}
       </div>
     </div>
-
-    <button class="memoryBtn" id="backToMenu" aria-label="Back to Memory menu">
-      <img src="./Assets/Memory-button.PNG" alt="Back to menu">
-    </button>
   `;
-
-  const backToMenu = document.getElementById("backToMenu");
-  if (backToMenu) backToMenu.addEventListener("click", renderMemoryMenu);
 
   const grid = document.getElementById("gameGrid");
   if (!grid) return;
@@ -131,43 +112,133 @@ function startMemoryAnimals() {
   let locked = false;
   let matchedCount = 0;
 
-  grid.querySelectorAll(".gameCard").forEach(card => {
-    card.addEventListener("click", () => {
+  grid.querySelectorAll(".gameCard").forEach(btn => {
+    btn.addEventListener("click", () => {
       if (locked) return;
-      if (card.classList.contains("matched")) return;
-      if (card === first) return;
+      if (btn.classList.contains("matched")) return;
+      if (btn === first) return;
 
-      card.classList.add("flipped");
+      btn.classList.add("selected");
 
       if (!first) {
-        first = card;
+        first = btn;
         return;
       }
 
-      second = card;
+      second = btn;
       locked = true;
 
       const k1 = first.dataset.key;
       const k2 = second.dataset.key;
 
       if (k1 === k2) {
+        playSmash(first, second, () => {
+          first.classList.remove("selected");
+          second.classList.remove("selected");
+          first.classList.add("matched");
+          second.classList.add("matched");
+
+          matchedCount += 2;
+          first = null;
+          second = null;
+          locked = false;
+
+          if (matchedCount === cards.length) winSequence(renderMenu);
+        });
+      } else {
+        setTimeout(() => {
+          first.classList.remove("selected");
+          second.classList.remove("selected");
+          first = null;
+          second = null;
+          locked = false;
+        }, 350);
+      }
+    });
+  });
+}
+
+// ---------------- MEMORY GAME (Animals - 8 cards face down) ----------------
+function startAnimalsMemory() {
+  const app = document.getElementById("app");
+  if (!app) return;
+
+  app.className = "game";
+
+  // 4 pairs = 8 cards (use whatever animals you actually have as files)
+  const picks = [
+    { key: "cat",    src: "./Assets/Cat.png" },
+    { key: "dog",    src: "./Assets/Dog.png" },
+    { key: "duck",   src: "./Assets/Duck.png" },
+    { key: "lion",   src: "./Assets/Lion.png" }, // make sure this exists
+  ];
+
+  const cards = shuffle([...picks, ...picks].map((c, i) => ({ ...c, id: `${c.key}_${i}` })));
+
+  app.innerHTML = `
+    <div class="gameWrap">
+      <div class="gameGrid" id="gameGrid" aria-label="Memory cards">
+        ${cards.map(c => `
+          <button class="gameCard" data-key="${c.key}" data-id="${c.id}" aria-label="Card">
+            <div class="cardInner">
+              <div class="cardFace cardBack"></div>
+              <div class="cardFace cardFront">
+                <img src="${c.src}" alt="${c.key}">
+              </div>
+            </div>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+
+  const grid = document.getElementById("gameGrid");
+  if (!grid) return;
+
+  let first = null;
+  let second = null;
+  let locked = false;
+  let matchedCount = 0;
+
+  const flip = (btn, on) => btn.classList.toggle("flipped", !!on);
+
+  grid.querySelectorAll(".gameCard").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (locked) return;
+      if (btn.classList.contains("matched")) return;
+      if (btn === first) return;
+
+      flip(btn, true);
+
+      if (!first) {
+        first = btn;
+        return;
+      }
+
+      second = btn;
+      locked = true;
+
+      const k1 = first.dataset.key;
+      const k2 = second.dataset.key;
+
+      if (k1 === k2) {
+        // match: keep them face up
         first.classList.add("matched");
         second.classList.add("matched");
-        matchedCount += 2;
 
+        matchedCount += 2;
         first = null;
         second = null;
         locked = false;
 
         burstConfetti(700);
 
-        if (matchedCount === 8) {
-          winSequence();
-        }
+        if (matchedCount === cards.length) winSequence(renderMemoryMenu);
       } else {
+        // wrong: flip back after a beat
         setTimeout(() => {
-          first.classList.remove("flipped");
-          second.classList.remove("flipped");
+          flip(first, false);
+          flip(second, false);
           first = null;
           second = null;
           locked = false;
@@ -175,23 +246,109 @@ function startMemoryAnimals() {
       }
     });
   });
-
-  function winSequence() {
-    burstConfetti(1600);
-
-    const overlay = document.createElement("div");
-    overlay.className = "winOverlay";
-    overlay.innerHTML = `<div class="winText">Well done!</div>`;
-    document.body.appendChild(overlay);
-
-    setTimeout(() => {
-      overlay.remove();
-      renderMemoryMenu();
-    }, 3500);
-  }
 }
 
-/* ---------- CONFETTI (CANVAS) ---------- */
+// ---------------- WIN OVERLAY ----------------
+function winSequence(onDone) {
+  burstConfetti(1800);
+
+  const overlay = document.createElement("div");
+  overlay.className = "winOverlay";
+  overlay.innerHTML = `<div class="winText">Well done!</div>`;
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.remove();
+    onDone && onDone();
+  }, 2200);
+}
+
+// ---------------- SMASH ANIMATION (Match mode) ----------------
+function playSmash(cardA, cardB, onDone) {
+  const layer = document.createElement("div");
+  layer.className = "smashLayer";
+  document.body.appendChild(layer);
+
+  const rA = cardA.getBoundingClientRect();
+  const rB = cardB.getBoundingClientRect();
+
+  const cloneA = makeClone(cardA, rA);
+  const cloneB = makeClone(cardB, rB);
+  layer.appendChild(cloneA);
+  layer.appendChild(cloneB);
+
+  burstConfetti(900);
+
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
+
+  const toCenterA = { x: cx - (rA.left + rA.width / 2), y: cy - (rA.top + rA.height / 2) };
+  const toCenterB = { x: cx - (rB.left + rB.width / 2), y: cy - (rB.top + rB.height / 2) };
+
+  cloneA.animate(
+    [
+      { transform: `translate(0px,0px) scale(1)` },
+      { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
+    ],
+    { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" }
+  );
+
+  cloneB.animate(
+    [
+      { transform: `translate(0px,0px) scale(1)` },
+      { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
+    ],
+    { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" }
+  );
+
+  setTimeout(() => {
+    cloneA.animate(
+      [
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(0.96)` },
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.02)` },
+      ],
+      { duration: 200, easing: "ease-out", fill: "forwards" }
+    );
+
+    cloneB.animate(
+      [
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(0.96)` },
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.02)` },
+      ],
+      { duration: 200, easing: "ease-out", fill: "forwards" }
+    );
+  }, 260);
+
+  setTimeout(() => {
+    layer.remove();
+    onDone && onDone();
+  }, 520);
+}
+
+function makeClone(cardBtn, rect) {
+  const clone = document.createElement("div");
+  clone.className = "smashClone";
+  clone.style.left = rect.left + "px";
+  clone.style.top = rect.top + "px";
+  clone.style.width = rect.width + "px";
+  clone.style.height = rect.height + "px";
+
+  const img = cardBtn.querySelector("img");
+  const imgClone = document.createElement("img");
+  imgClone.src = img ? img.src : "";
+  imgClone.alt = img ? img.alt : "";
+  imgClone.style.width = "100%";
+  imgClone.style.height = "100%";
+  imgClone.style.objectFit = "cover";
+  imgClone.style.display = "block";
+
+  clone.appendChild(imgClone);
+  return clone;
+}
+
+// ---------------- CONFETTI ----------------
 let confettiRAF = null;
 
 function burstConfetti(durationMs = 800) {
@@ -258,7 +415,7 @@ function burstConfetti(durationMs = 800) {
   confettiRAF = requestAnimationFrame(frame);
 }
 
-/* ---------- UTIL ---------- */
+// ---------------- UTIL ----------------
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = (Math.random() * (i + 1)) | 0;
@@ -279,9 +436,9 @@ function hideSplash() {
   setTimeout(() => splash.remove(), 400);
 }
 
-/* ---------- STARTUP (keeps your working splash flow) ---------- */
+// ---------------- STARTUP / SPLASH ----------------
 window.addEventListener("load", () => {
-  renderMatchMenu();
+  renderMenu();
   showApp();
 
   const splash = document.getElementById("splash");
@@ -351,3 +508,7 @@ window.addEventListener("load", () => {
   splash.addEventListener("pointerup", start);
   splash.addEventListener("touchend", start);
 });
+
+// Expose (optional)
+window.renderMenu = renderMenu;
+window.renderMemoryMenu = renderMemoryMenu;
