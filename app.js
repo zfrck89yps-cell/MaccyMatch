@@ -1,12 +1,11 @@
 // app.js
-// - Menu: 6 equal category cards (Animals image + 5 placeholders)
-// - Game (Animals Easy): 6 cards (3 pairs) FACE UP
-// - Match: smash-to-centre + confetti
-// - Wrong: nothing (just remove outline after a moment)
-// - Win: BIG “Well done!” + confetti, then 5s -> back to menu
-// - Difficulty dots: still save/restore (for later)
+// - Match Menu: 6 category cards + Memory button (bottom-right)
+// - Memory Menu: new background + same categories
+// - Memory Game: 8 cards face-down (4 pairs). Tap to flip, match stays, wrong flips back.
+// - Win: "Well done!" + confetti, then back to Memory Menu
+// - Splash flow unchanged
 
-function renderMenu() {
+function renderMatchMenu() {
   const app = document.getElementById("app");
   if (!app) return;
 
@@ -31,49 +30,69 @@ function renderMenu() {
 
     <div class="scrollHint">‹ ›</div>
 
-    <div class="difficulty" id="difficultyBox" aria-label="Difficulty">
-      <div class="difficultyTitle">Difficulty</div>
-      <div class="dots">
-        <div class="dot g" data-level="easy" title="Beginner"></div>
-        <div class="dot y" data-level="medium" title="Intermediate"></div>
-        <div class="dot r" data-level="hard" title="Hard"></div>
-      </div>
-    </div>
+    <button class="memoryBtn" id="memoryBtn" aria-label="Maccy Memory">
+      <img src="./Assets/Memory-button.PNG" alt="Maccy Memory">
+    </button>
   `;
 
-  // Link animals button
+  // Animals (match) — keep your old match game if you want later.
+  // For now this just goes to memory concept only if you want.
   const animalsBtn = document.getElementById("catAnimals");
-  if (animalsBtn) animalsBtn.addEventListener("click", startAnimalsEasy);
-
-  // Difficulty dots
-  const saved = localStorage.getItem("mm_difficulty") || "easy";
-  setDifficulty(saved);
-
-  app.querySelectorAll(".dot").forEach(dot => {
-    dot.addEventListener("click", (e) => {
-      e.stopPropagation();
-      setDifficulty(dot.dataset.level);
+  if (animalsBtn) {
+    animalsBtn.addEventListener("click", () => {
+      // If you still want your old match mode, wire it here.
+      // For now, send to memory menu to avoid confusion:
+      renderMemoryMenu();
     });
-  });
+  }
+
+  const memBtn = document.getElementById("memoryBtn");
+  if (memBtn) memBtn.addEventListener("click", renderMemoryMenu);
 }
 
-function setDifficulty(level) {
-  localStorage.setItem("mm_difficulty", level);
-  document.querySelectorAll(".dot").forEach(d => {
-    d.classList.toggle("active", d.dataset.level === level);
-  });
+function renderMemoryMenu() {
+  const app = document.getElementById("app");
+  if (!app) return;
+
+  app.className = "memoryMenu";
+
+  app.innerHTML = `
+    <div class="menuWrap">
+      <div class="menuGrid" aria-label="Memory Categories">
+
+        <button class="catCardBtn" id="memAnimals" aria-label="Animals">
+          <img class="catImg" src="./Assets/Animals.PNG" alt="Animals">
+        </button>
+
+        <button class="catCardBtn placeholder" disabled aria-label="Vehicles (coming soon)">Vehicles</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Food (coming soon)">Food</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Numbers (coming soon)">Numbers</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Colours (coming soon)">Colours</button>
+        <button class="catCardBtn placeholder" disabled aria-label="Shapes (coming soon)">Shapes</button>
+
+      </div>
+    </div>
+
+    <div class="scrollHint">‹ ›</div>
+  `;
+
+  const animals = document.getElementById("memAnimals");
+  if (animals) animals.addEventListener("click", () => startMemoryGame("animals"));
 }
 
-function startAnimalsEasy() {
+function startMemoryGame(category) {
   const app = document.getElementById("app");
   if (!app) return;
 
   app.className = "game";
 
+  // 4 pairs = 8 cards
+  // (Uses files you showed in Assets list)
   const picks = [
-    { key: "cat",  src: "./Assets/Cat.png"  },
-    { key: "dog",  src: "./Assets/Dog.png"  },
-    { key: "duck", src: "./Assets/Duck.png" },
+    { key: "cat",    src: "./Assets/Cat.png" },
+    { key: "dog",    src: "./Assets/Dog.png" },
+    { key: "duck",   src: "./Assets/Duck.png" },
+    { key: "pig",    src: "./Assets/Pig.png" },
   ];
 
   const cards = shuffle(
@@ -82,34 +101,20 @@ function startAnimalsEasy() {
 
   app.innerHTML = `
     <div class="gameWrap">
-      <div class="gameGrid" id="gameGrid" aria-label="Match the cards">
+      <div class="gameGrid" id="gameGrid" aria-label="Maccy Memory">
         ${cards.map(c => `
-          <button class="gameCard" data-key="${c.key}" data-id="${c.id}" aria-label="${c.key}">
-            <img src="${c.src}" alt="${c.key}">
+          <button class="gameCard" data-key="${c.key}" data-id="${c.id}" aria-label="Card">
+            <div class="cardInner">
+              <div class="cardFace cardBack"></div>
+              <div class="cardFace cardFront">
+                <img src="${c.src}" alt="${c.key}">
+              </div>
+            </div>
           </button>
         `).join("")}
       </div>
     </div>
-
-    <div class="difficulty" id="difficultyBox" aria-label="Difficulty">
-      <div class="difficultyTitle">Difficulty</div>
-      <div class="dots">
-        <div class="dot g" data-level="easy" title="Beginner"></div>
-        <div class="dot y" data-level="medium" title="Intermediate"></div>
-        <div class="dot r" data-level="hard"></div>
-      </div>
-    </div>
   `;
-
-  // Keep dots visible + state
-  const saved = localStorage.getItem("mm_difficulty") || "easy";
-  setDifficulty(saved);
-  app.querySelectorAll(".dot").forEach(dot => {
-    dot.addEventListener("click", (e) => {
-      e.stopPropagation();
-      setDifficulty(dot.dataset.level);
-    });
-  });
 
   const grid = document.getElementById("gameGrid");
   if (!grid) return;
@@ -125,7 +130,7 @@ function startAnimalsEasy() {
       if (btn.classList.contains("matched")) return;
       if (btn === first) return;
 
-      btn.classList.add("selected");
+      btn.classList.add("flipped");
 
       if (!first) {
         first = btn;
@@ -139,27 +144,27 @@ function startAnimalsEasy() {
       const k2 = second.dataset.key;
 
       if (k1 === k2) {
-        playSmash(first, second, () => {
-          first.classList.remove("selected");
-          second.classList.remove("selected");
-          first.classList.add("matched");
-          second.classList.add("matched");
+        // match
+        first.classList.add("matched");
+        second.classList.add("matched");
+        matchedCount += 2;
 
-          matchedCount += 2;
-          first = null;
-          second = null;
-          locked = false;
+        first = null;
+        second = null;
+        locked = false;
 
-          if (matchedCount === 6) winSequence();
-        });
+        if (matchedCount === 8) {
+          winSequence();
+        }
       } else {
+        // wrong -> flip back
         setTimeout(() => {
-          first.classList.remove("selected");
-          second.classList.remove("selected");
+          first.classList.remove("flipped");
+          second.classList.remove("flipped");
           first = null;
           second = null;
           locked = false;
-        }, 350);
+        }, 700);
       }
     });
   });
@@ -174,95 +179,12 @@ function startAnimalsEasy() {
 
     setTimeout(() => {
       overlay.remove();
-      renderMenu();
-    }, 5000);
+      renderMemoryMenu();
+    }, 2500);
   }
 }
 
-function playSmash(cardA, cardB, onDone) {
-  const layer = document.createElement("div");
-  layer.className = "smashLayer";
-  document.body.appendChild(layer);
-
-  const rA = cardA.getBoundingClientRect();
-  const rB = cardB.getBoundingClientRect();
-
-  const cloneA = makeClone(cardA, rA);
-  const cloneB = makeClone(cardB, rB);
-  layer.appendChild(cloneA);
-  layer.appendChild(cloneB);
-
-  burstConfetti(900);
-
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight / 2;
-
-  const toCenterA = { x: cx - (rA.left + rA.width / 2), y: cy - (rA.top + rA.height / 2) };
-  const toCenterB = { x: cx - (rB.left + rB.width / 2), y: cy - (rB.top + rB.height / 2) };
-
-  cloneA.animate(
-    [
-      { transform: `translate(0px,0px) scale(1)` },
-      { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
-    ],
-    { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" }
-  );
-
-  cloneB.animate(
-    [
-      { transform: `translate(0px,0px) scale(1)` },
-      { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
-    ],
-    { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" }
-  );
-
-  setTimeout(() => {
-    cloneA.animate(
-      [
-        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
-        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(0.96)` },
-        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.02)` },
-      ],
-      { duration: 200, easing: "ease-out", fill: "forwards" }
-    );
-
-    cloneB.animate(
-      [
-        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
-        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(0.96)` },
-        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.02)` },
-      ],
-      { duration: 200, easing: "ease-out", fill: "forwards" }
-    );
-  }, 260);
-
-  setTimeout(() => {
-    layer.remove();
-    if (onDone) onDone();
-  }, 520);
-}
-
-function makeClone(cardBtn, rect) {
-  const clone = document.createElement("div");
-  clone.className = "smashClone";
-  clone.style.left = rect.left + "px";
-  clone.style.top = rect.top + "px";
-  clone.style.width = rect.width + "px";
-  clone.style.height = rect.height + "px";
-
-  const img = cardBtn.querySelector("img");
-  const imgClone = document.createElement("img");
-  imgClone.src = img ? img.src : "";
-  imgClone.alt = img ? img.alt : "";
-  imgClone.style.width = "100%";
-  imgClone.style.height = "100%";
-  imgClone.style.objectFit = "cover";
-  imgClone.style.display = "block";
-
-  clone.appendChild(imgClone);
-  return clone;
-}
-
+/* ---------- CONFETTI ---------- */
 let confettiRAF = null;
 
 function burstConfetti(durationMs = 800) {
@@ -329,6 +251,7 @@ function burstConfetti(durationMs = 800) {
   confettiRAF = requestAnimationFrame(frame);
 }
 
+/* ---------- UTIL ---------- */
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = (Math.random() * (i + 1)) | 0;
@@ -349,8 +272,9 @@ function hideSplash() {
   setTimeout(() => splash.remove(), 400);
 }
 
+/* ---------- STARTUP (same splash flow) ---------- */
 window.addEventListener("load", () => {
-  renderMenu();
+  renderMatchMenu();
   showApp();
 
   const splash = document.getElementById("splash");
