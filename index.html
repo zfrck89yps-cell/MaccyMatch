@@ -197,24 +197,29 @@
     .r { background: #ff4d4d; }
 
     /* ---------- GAME LAYOUT ---------- */
+/* ---------- GAME LAYOUT ---------- */
 .gameWrap {
   position: absolute;
   inset: 0;
   display: flex;
   justify-content: center;
 
-  /* Starts slightly lower than menu title, but fits on all screens */
-  padding: clamp(140px, 18vh, 220px) 36px 40px;
+  /* push grid slightly down, but not huge */
+  padding: 18vh 32px 48px;
 }
 
 .gameGrid {
-  width: min(1200px, 92vw);
+  /* 🔑 THIS LINE controls card size */
+  width: min(900px, 88vw);
+
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;                 /* tighter spacing so cards fit */
+
+  /* tighter gaps = smaller overall grid */
+  gap: 16px;
+
   align-content: start;
 }
-
 .gameCard {
   border: none;
   border-radius: 22px;
@@ -225,7 +230,7 @@
   cursor: pointer;
 
   /* KEY FIX: cards are shorter so 3x2 fits */
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
 
   width: 100%;
   position: relative;
