@@ -78,7 +78,7 @@
       overflow: hidden;
     }
 
-    /* Menu background image */
+    /* Match menu background */
     #app.menu {
       background-image: url("./Assets/Menu-background.png");
       background-size: cover;
@@ -86,7 +86,15 @@
       background-repeat: no-repeat;
     }
 
-    /* Game background image */
+    /* Memory menu background */
+    #app.memoryMenu {
+      background-image: url("./Assets/Memory-menu.png");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    /* Game background */
     #app.game {
       background-image: url("./Assets/Game-background.png");
       background-size: cover;
@@ -100,9 +108,7 @@
       inset: 0;
       display: flex;
       justify-content: center;
-
-      /* ✅ move menu cards down WITHOUT shrinking them */
-      padding: 32vh  42px 110px;
+      padding: 32vh 42px 110px; /* card block starts lower */
     }
 
     .menuGrid {
@@ -121,8 +127,6 @@
       box-shadow: 0 14px 30px rgba(0,0,0,0.22);
       overflow: hidden;
       cursor: pointer;
-
-      /* equal-size cards */
       aspect-ratio: 16 / 9;
       width: 100%;
     }
@@ -162,40 +166,27 @@
       z-index: 5;
     }
 
-    /* difficulty bottom-right */
-    .difficulty {
+    /* ---------- MEMORY BUTTON (bottom-right) ---------- */
+    .memoryBtn {
       position: absolute;
       right: 18px;
       bottom: 18px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.78);
-      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
-      display: grid;
-      gap: 8px;
-      user-select: none;
-      z-index: 5;
-    }
-    .difficultyTitle {
-      font-weight: 900;
-      font-size: 16px;
-      opacity: .9;
-      text-align: center;
-    }
-    .dots { display: flex; gap: 10px; justify-content: center; }
-    .dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 999px;
-      border: 3px solid rgba(255,255,255,0.9);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      width: 86px;   /* thumb-ish */
+      height: 86px;
+      border: none;
+      background: transparent;
+      padding: 0;
       cursor: pointer;
-      opacity: 0.55;
+      z-index: 6;
     }
-    .dot.active { opacity: 1; transform: scale(1.05); }
-    .g { background: #35d05a; }
-    .y { background: #ffd84d; }
-    .r { background: #ff4d4d; }
+    .memoryBtn:active { transform: scale(0.98); }
+    .memoryBtn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
+    }
 
     /* ---------- GAME LAYOUT (8 cards) ---------- */
     .gameWrap {
@@ -203,17 +194,13 @@
       inset: 0;
       display: flex;
       justify-content: center;
-
-      /* ✅ move game cards down WITHOUT shrinking them */
       padding: 22vh 42px 120px;
     }
 
     .gameGrid {
       width: min(1100px, 92vw);
       display: grid;
-
-      /* ✅ 8 cards = 4 columns x 2 rows */
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, 1fr); /* 8 = 4x2 */
       gap: 16px;
       align-content: start;
     }
@@ -233,37 +220,53 @@
       transform: translateZ(0);
     }
 
-    .gameCard img {
+    /* Memory flip structure */
+    .cardInner {
+      position: absolute;
+      inset: 0;
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .cardFace {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backface-visibility: hidden;
+    }
+
+    /* Front image (hidden until flipped) */
+    .cardFront img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
     }
 
-    .gameCard.selected {
-      outline: 6px solid rgba(255,255,255,0.85);
-      transform: scale(1.01);
+    /* Back design (visible by default) */
+    .cardBack {
+      background: rgba(255,255,255,0.35);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
     }
+    .cardBack::after {
+      content: "M";
+      font-weight: 1000;
+      font-size: clamp(26px, 3vw, 44px);
+      color: rgba(0,0,0,0.25);
+      text-shadow: 0 2px 0 rgba(255,255,255,0.35);
+    }
+
+    /* Simple “flip” behaviour using visibility (not 3D, keeps it reliable on iPad Safari) */
+    .gameCard .cardFront { display: none; }
+    .gameCard.flipped .cardBack { display: none; }
+    .gameCard.flipped .cardFront { display: block; }
 
     .gameCard.matched {
-      opacity: 0;
       pointer-events: none;
-      transition: opacity 200ms ease;
-    }
-
-    /* Smash overlay */
-    .smashLayer {
-      position: fixed;
-      inset: 0;
-      z-index: 9998;
-      pointer-events: none;
-    }
-    .smashClone {
-      position: absolute;
-      border-radius: 22px;
-      overflow: hidden;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-      will-change: transform;
+      outline: 6px solid rgba(255,255,255,0.55);
     }
 
     /* Win overlay */
@@ -314,7 +317,6 @@
   <!-- Confetti -->
   <canvas id="confettiCanvas"></canvas>
 
-  <!-- IMPORTANT: bump this v= number when testing -->
   <script src="./app.js?v=99"></script>
 </body>
 </html>
