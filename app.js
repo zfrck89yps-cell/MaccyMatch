@@ -1,9 +1,8 @@
-// app.js
-// - Match Menu: 6 category cards + Memory button (bottom-right)
-// - Memory Menu: new background + same categories
-// - Memory Game: 8 cards face-down (4 pairs). Tap to flip, match stays, wrong flips back.
-// - Win: "Well done!" + confetti, then back to Memory Menu
-// - Splash flow unchanged
+// app.js (Match menu + Memory menu + Memory game 8 cards face-down)
+// - NO difficulty UI
+// - Memory button bottom-right opens memory menu
+// - Memory menu uses Memory-menu.png background
+// - Animals on memory menu -> 8-card memory game face-down
 
 function renderMatchMenu() {
   const app = document.getElementById("app");
@@ -15,16 +14,15 @@ function renderMatchMenu() {
     <div class="menuWrap">
       <div class="menuGrid" aria-label="Categories">
 
-        <button class="catCardBtn" id="catAnimals" aria-label="Animals">
+        <button class="catCardBtn" id="matchAnimals" aria-label="Animals">
           <img class="catImg" src="./Assets/Animals.PNG" alt="Animals">
         </button>
 
-        <button class="catCardBtn placeholder" disabled aria-label="Vehicles (coming soon)">Vehicles</button>
-        <button class="catCardBtn placeholder" disabled aria-label="Food (coming soon)">Food</button>
-        <button class="catCardBtn placeholder" disabled aria-label="Numbers (coming soon)">Numbers</button>
-        <button class="catCardBtn placeholder" disabled aria-label="Colours (coming soon)">Colours</button>
-        <button class="catCardBtn placeholder" disabled aria-label="Shapes (coming soon)">Shapes</button>
-
+        <button class="catCardBtn placeholder" disabled>Vehicles</button>
+        <button class="catCardBtn placeholder" disabled>Food</button>
+        <button class="catCardBtn placeholder" disabled>Numbers</button>
+        <button class="catCardBtn placeholder" disabled>Colours</button>
+        <button class="catCardBtn placeholder" disabled>Shapes</button>
       </div>
     </div>
 
@@ -35,19 +33,19 @@ function renderMatchMenu() {
     </button>
   `;
 
-  // Animals (match) — keep your old match game if you want later.
-  // For now this just goes to memory concept only if you want.
-  const animalsBtn = document.getElementById("catAnimals");
-  if (animalsBtn) {
-    animalsBtn.addEventListener("click", () => {
-      // If you still want your old match mode, wire it here.
+  // Match menu Animals (keep it doing something simple for now)
+  const matchAnimals = document.getElementById("matchAnimals");
+  if (matchAnimals) {
+    matchAnimals.addEventListener("click", () => {
+      // If you want Match mode later, wire it here.
       // For now, send to memory menu to avoid confusion:
       renderMemoryMenu();
     });
   }
 
-  const memBtn = document.getElementById("memoryBtn");
-  if (memBtn) memBtn.addEventListener("click", renderMemoryMenu);
+  // Go to Memory menu
+  const memoryBtn = document.getElementById("memoryBtn");
+  if (memoryBtn) memoryBtn.addEventListener("click", renderMemoryMenu);
 }
 
 function renderMemoryMenu() {
@@ -64,57 +62,66 @@ function renderMemoryMenu() {
           <img class="catImg" src="./Assets/Animals.PNG" alt="Animals">
         </button>
 
-        <button class="catCardBtn placeholder" disabled aria-label="Vehicles (coming soon)">Vehicles</button>
-        <button class="catCardBtn placeholder" disabled aria-label="Food (coming soon)">Food</button>
-        <button class="catCardBtn placeholder" disabled aria-label="Numbers (coming soon)">Numbers</button>
-        <button class="catCardBtn placeholder" disabled aria-label="Colours (coming soon)">Colours</button>
-        <button class="catCardBtn placeholder" disabled aria-label="Shapes (coming soon)">Shapes</button>
-
+        <button class="catCardBtn placeholder" disabled>Vehicles</button>
+        <button class="catCardBtn placeholder" disabled>Food</button>
+        <button class="catCardBtn placeholder" disabled>Numbers</button>
+        <button class="catCardBtn placeholder" disabled>Colours</button>
+        <button class="catCardBtn placeholder" disabled>Shapes</button>
       </div>
     </div>
 
     <div class="scrollHint">‹ ›</div>
+
+    <!-- Optional: tap Memory button again returns to Match menu -->
+    <button class="memoryBtn" id="backToMatch" aria-label="Back to Match menu">
+      <img src="./Assets/Memory-button.PNG" alt="Back">
+    </button>
   `;
 
-  const animals = document.getElementById("memAnimals");
-  if (animals) animals.addEventListener("click", () => startMemoryGame("animals"));
+  const memAnimals = document.getElementById("memAnimals");
+  if (memAnimals) memAnimals.addEventListener("click", startMemoryAnimals);
+
+  const backBtn = document.getElementById("backToMatch");
+  if (backBtn) backBtn.addEventListener("click", renderMatchMenu);
 }
 
-function startMemoryGame(category) {
+function startMemoryAnimals() {
   const app = document.getElementById("app");
   if (!app) return;
 
   app.className = "game";
 
-  // 4 pairs = 8 cards
-  // (Uses files you showed in Assets list)
+  // 4 pairs = 8 cards (change these filenames to match your Assets exactly)
   const picks = [
-    { key: "cat",    src: "./Assets/Cat.png" },
-    { key: "dog",    src: "./Assets/Dog.png" },
-    { key: "duck",   src: "./Assets/Duck.png" },
-    { key: "pig",    src: "./Assets/Pig.png" },
+    { key: "cat",     src: "./Assets/Cat.png" },
+    { key: "dog",     src: "./Assets/Dog.png" },
+    { key: "duck",    src: "./Assets/Duck.png" },
+    { key: "lion",    src: "./Assets/Lion.png" }, // you have Lion.png in your list
   ];
 
-  const cards = shuffle(
-    [...picks, ...picks].map((c, i) => ({ ...c, id: `${c.key}_${i}` }))
-  );
+  const deck = shuffle([...picks, ...picks].map((c, i) => ({ ...c, id: `${c.key}_${i}` })));
 
   app.innerHTML = `
     <div class="gameWrap">
       <div class="gameGrid" id="gameGrid" aria-label="Maccy Memory">
-        ${cards.map(c => `
-          <button class="gameCard" data-key="${c.key}" data-id="${c.id}" aria-label="Card">
-            <div class="cardInner">
-              <div class="cardFace cardBack"></div>
-              <div class="cardFace cardFront">
-                <img src="${c.src}" alt="${c.key}">
-              </div>
+        ${deck.map(c => `
+          <button class="gameCard" data-key="${c.key}" data-id="${c.id}" aria-label="card">
+            <div class="cardFace cardBack"></div>
+            <div class="cardFace cardFront">
+              <img src="${c.src}" alt="${c.key}">
             </div>
           </button>
         `).join("")}
       </div>
     </div>
+
+    <button class="memoryBtn" id="backToMenu" aria-label="Back to Memory menu">
+      <img src="./Assets/Memory-button.PNG" alt="Back to menu">
+    </button>
   `;
+
+  const backToMenu = document.getElementById("backToMenu");
+  if (backToMenu) backToMenu.addEventListener("click", renderMemoryMenu);
 
   const grid = document.getElementById("gameGrid");
   if (!grid) return;
@@ -124,27 +131,26 @@ function startMemoryGame(category) {
   let locked = false;
   let matchedCount = 0;
 
-  grid.querySelectorAll(".gameCard").forEach(btn => {
-    btn.addEventListener("click", () => {
+  grid.querySelectorAll(".gameCard").forEach(card => {
+    card.addEventListener("click", () => {
       if (locked) return;
-      if (btn.classList.contains("matched")) return;
-      if (btn === first) return;
+      if (card.classList.contains("matched")) return;
+      if (card === first) return;
 
-      btn.classList.add("flipped");
+      card.classList.add("flipped");
 
       if (!first) {
-        first = btn;
+        first = card;
         return;
       }
 
-      second = btn;
+      second = card;
       locked = true;
 
       const k1 = first.dataset.key;
       const k2 = second.dataset.key;
 
       if (k1 === k2) {
-        // match
         first.classList.add("matched");
         second.classList.add("matched");
         matchedCount += 2;
@@ -153,24 +159,25 @@ function startMemoryGame(category) {
         second = null;
         locked = false;
 
+        burstConfetti(700);
+
         if (matchedCount === 8) {
           winSequence();
         }
       } else {
-        // wrong -> flip back
         setTimeout(() => {
           first.classList.remove("flipped");
           second.classList.remove("flipped");
           first = null;
           second = null;
           locked = false;
-        }, 700);
+        }, 650);
       }
     });
   });
 
   function winSequence() {
-    burstConfetti(1800);
+    burstConfetti(1600);
 
     const overlay = document.createElement("div");
     overlay.className = "winOverlay";
@@ -180,11 +187,11 @@ function startMemoryGame(category) {
     setTimeout(() => {
       overlay.remove();
       renderMemoryMenu();
-    }, 2500);
+    }, 3500);
   }
 }
 
-/* ---------- CONFETTI ---------- */
+/* ---------- CONFETTI (CANVAS) ---------- */
 let confettiRAF = null;
 
 function burstConfetti(durationMs = 800) {
@@ -272,7 +279,7 @@ function hideSplash() {
   setTimeout(() => splash.remove(), 400);
 }
 
-/* ---------- STARTUP (same splash flow) ---------- */
+/* ---------- STARTUP (keeps your working splash flow) ---------- */
 window.addEventListener("load", () => {
   renderMatchMenu();
   showApp();
