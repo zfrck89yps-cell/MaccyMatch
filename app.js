@@ -1,38 +1,37 @@
-/* app.js
-   - Menu: 6 equal category cards (Animals image + 5 placeholders)
-   - Menu starts lower (your CSS .menuWrap padding handles this)
-   - Game: Animals Easy = 6 cards (3 pairs), FACE UP always
-   - Match: cards “smash” together in centre + confetti
-   - Wrong: nothing happens (no flip, no shake)
-   - Win: BIG “Well done!” + confetti, then auto return to menu after 5s
-   - Difficulty dots still work & are saved (not used yet for Animals)
-*/
+// app.js (clean, no wrapper, so it can’t “silently die”)
+// Menu: 6 equal category cards (Animals image + 5 placeholders) using your existing CSS
+// Game (Animals Easy): 6 cards (3 pairs) FACE UP
+// Match: smash-to-centre + confetti
+// Wrong: nothing (just remove outlines after a moment)
+// Win: BIG "Well done!" + confetti, then 5s -> back to menu
 
-// ---------- MENU ----------
+// ---------------- MENU ----------------
 function renderMenu() {
   const app = document.getElementById("app");
+  if (!app) return;
+
   app.className = "menu";
 
   app.innerHTML = `
     <div class="menuWrap">
       <div class="menuGrid" aria-label="Categories">
-        <!-- Animals category uses your image card -->
+
         <button class="catCardBtn" id="catAnimals" aria-label="Animals">
           <img class="catImg" src="./Assets/Animals.PNG" alt="Animals">
         </button>
 
-        <!-- 5 placeholders -->
         <button class="catCardBtn placeholder" disabled aria-label="Vehicles (coming soon)">Vehicles</button>
         <button class="catCardBtn placeholder" disabled aria-label="Food (coming soon)">Food</button>
         <button class="catCardBtn placeholder" disabled aria-label="Numbers (coming soon)">Numbers</button>
         <button class="catCardBtn placeholder" disabled aria-label="Colours (coming soon)">Colours</button>
         <button class="catCardBtn placeholder" disabled aria-label="Shapes (coming soon)">Shapes</button>
+
       </div>
     </div>
 
     <div class="scrollHint">‹ ›</div>
 
-    <div class="difficulty" id="difficultyBox">
+    <div class="difficulty" id="difficultyBox" aria-label="Difficulty">
       <div class="difficultyTitle">Difficulty</div>
       <div class="dots">
         <div class="dot g" data-level="easy" title="Beginner"></div>
@@ -42,17 +41,15 @@ function renderMenu() {
     </div>
   `;
 
-  // Click Animals -> start game
+  // Animals starts game
   const animalsBtn = document.getElementById("catAnimals");
-  animalsBtn.addEventListener("click", () => {
-    startAnimalsEasy();
-  });
+  if (animalsBtn) animalsBtn.onclick = startAnimalsEasy;
 
-  // Difficulty (kept for later)
+  // Difficulty dots (saved for later)
   const saved = localStorage.getItem("mm_difficulty") || "easy";
   setDifficulty(saved);
 
-  document.querySelectorAll(".dot").forEach(dot => {
+  app.querySelectorAll(".dot").forEach(dot => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
       setDifficulty(dot.dataset.level);
@@ -67,37 +64,35 @@ function setDifficulty(level) {
   });
 }
 
-// ---------- GAME (Animals Easy: 6 cards / 3 pairs) ----------
+// ---------------- GAME: ANIMALS EASY ----------------
 function startAnimalsEasy() {
   const app = document.getElementById("app");
+  if (!app) return;
+
   app.className = "game";
 
-  // 3 animals -> duplicated to make 6 cards (3 pairs)
   const picks = [
     { key: "cat",  src: "./Assets/Cat.png"  },
     { key: "dog",  src: "./Assets/Dog.png"  },
     { key: "duck", src: "./Assets/Duck.png" },
   ];
 
-  // duplicate + shuffle
-  const deck = shuffle([...picks, ...picks].map((c, i) => ({
-    id: `${c.key}_${i}`,
-    key: c.key,
-    src: c.src
-  })));
+  const cards = shuffle(
+    [...picks, ...picks].map((c, i) => ({ ...c, id: `${c.key}_${i}` }))
+  );
 
   app.innerHTML = `
     <div class="gameWrap">
       <div class="gameGrid" id="gameGrid" aria-label="Match the cards">
-        ${deck.map(card => `
-          <button class="gameCard" data-key="${card.key}" data-id="${card.id}" aria-label="${card.key}">
-            <img src="${card.src}" alt="${card.key}">
+        ${cards.map(c => `
+          <button class="gameCard" data-key="${c.key}" data-id="${c.id}" aria-label="${c.key}">
+            <img src="${c.src}" alt="${c.key}">
           </button>
         `).join("")}
       </div>
     </div>
 
-    <div class="difficulty" id="difficultyBox">
+    <div class="difficulty" id="difficultyBox" aria-label="Difficulty">
       <div class="difficultyTitle">Difficulty</div>
       <div class="dots">
         <div class="dot g" data-level="easy" title="Beginner"></div>
@@ -107,10 +102,10 @@ function startAnimalsEasy() {
     </div>
   `;
 
-  // Keep difficulty dots visible + stored (still not affecting Animals yet)
+  // Keep difficulty dots visible
   const saved = localStorage.getItem("mm_difficulty") || "easy";
   setDifficulty(saved);
-  document.querySelectorAll(".dot").forEach(dot => {
+  app.querySelectorAll(".dot").forEach(dot => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
       setDifficulty(dot.dataset.level);
@@ -118,10 +113,12 @@ function startAnimalsEasy() {
   });
 
   const grid = document.getElementById("gameGrid");
+  if (!grid) return;
+
   let first = null;
   let second = null;
   let locked = false;
-  let matchedPairs = 0;
+  let matchedCount = 0;
 
   grid.querySelectorAll(".gameCard").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -143,27 +140,23 @@ function startAnimalsEasy() {
       const k2 = second.dataset.key;
 
       if (k1 === k2) {
-        // MATCH: smash + confetti then hide both
         playSmash(first, second, () => {
           first.classList.remove("selected");
           second.classList.remove("selected");
           first.classList.add("matched");
           second.classList.add("matched");
-          matchedPairs += 1;
 
+          matchedCount += 2;
           first = null;
           second = null;
           locked = false;
 
-          if (matchedPairs === 3) {
-            winSequence();
-          }
+          if (matchedCount === 6) winSequence();
         });
       } else {
-        // WRONG: nothing happens (just remove highlight after a moment)
         setTimeout(() => {
-          if (first) first.classList.remove("selected");
-          if (second) second.classList.remove("selected");
+          first.classList.remove("selected");
+          second.classList.remove("selected");
           first = null;
           second = null;
           locked = false;
@@ -173,7 +166,7 @@ function startAnimalsEasy() {
   });
 
   function winSequence() {
-    burstConfetti(2200);
+    burstConfetti(1800);
 
     const overlay = document.createElement("div");
     overlay.className = "winOverlay";
@@ -187,65 +180,68 @@ function startAnimalsEasy() {
   }
 }
 
-// ---------- SMASH ANIMATION ----------
+// ---------------- SMASH ANIMATION ----------------
 function playSmash(cardA, cardB, onDone) {
-  // Create layer
   const layer = document.createElement("div");
   layer.className = "smashLayer";
   document.body.appendChild(layer);
 
-  const rectA = cardA.getBoundingClientRect();
-  const rectB = cardB.getBoundingClientRect();
+  const rA = cardA.getBoundingClientRect();
+  const rB = cardB.getBoundingClientRect();
 
-  const cloneA = makeClone(cardA, rectA);
-  const cloneB = makeClone(cardB, rectB);
+  const cloneA = makeClone(cardA, rA);
+  const cloneB = makeClone(cardB, rB);
   layer.appendChild(cloneA);
   layer.appendChild(cloneB);
 
-  // Confetti on match
   burstConfetti(900);
 
   const cx = window.innerWidth / 2;
   const cy = window.innerHeight / 2;
 
-  const aCenter = { x: rectA.left + rectA.width / 2, y: rectA.top + rectA.height / 2 };
-  const bCenter = { x: rectB.left + rectB.width / 2, y: rectB.top + rectB.height / 2 };
+  const toCenterA = { x: cx - (rA.left + rA.width / 2), y: cy - (rA.top + rA.height / 2) };
+  const toCenterB = { x: cx - (rB.left + rB.width / 2), y: cy - (rB.top + rB.height / 2) };
 
-  const aTo = { x: cx - aCenter.x, y: cy - aCenter.y };
-  const bTo = { x: cx - bCenter.x, y: cy - bCenter.y };
-
-  // Move in
   cloneA.animate(
-    [{ transform: `translate(${aTo.x}px, ${aTo.y}px) scale(1)` }],
-    { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" }
-  );
-  cloneB.animate(
-    [{ transform: `translate(${bTo.x}px, ${bTo.y}px) scale(1)` }],
+    [
+      { transform: `translate(0px,0px) scale(1)` },
+      { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
+    ],
     { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" }
   );
 
-  // “Smash” bounce
+  cloneB.animate(
+    [
+      { transform: `translate(0px,0px) scale(1)` },
+      { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
+    ],
+    { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" }
+  );
+
   setTimeout(() => {
     cloneA.animate(
-      [{ transform: `translate(${aTo.x}px, ${aTo.y}px) scale(1.10)` },
-       { transform: `translate(${aTo.x}px, ${aTo.y}px) scale(0.95)` },
-       { transform: `translate(${aTo.x}px, ${aTo.y}px) scale(1.02)` }],
-      { duration: 320, easing: "ease-out", fill: "forwards" }
+      [
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(0.96)` },
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.02)` },
+      ],
+      { duration: 200, easing: "ease-out", fill: "forwards" }
     );
 
     cloneB.animate(
-      [{ transform: `translate(${bTo.x}px, ${bTo.y}px) scale(1.10)` },
-       { transform: `translate(${bTo.x}px, ${bTo.y}px) scale(0.95)` },
-       { transform: `translate(${bTo.x}px, ${bTo.y}px) scale(1.02)` }],
-      { duration: 320, easing: "ease-out", fill: "forwards" }
+      [
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(0.96)` },
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.02)` },
+      ],
+      { duration: 200, easing: "ease-out", fill: "forwards" }
     );
   }, 260);
 
-  // Cleanup
   setTimeout(() => {
     layer.remove();
-    if (typeof onDone === "function") onDone();
-  }, 900);
+    if (onDone) onDone();
+  }, 520);
 }
 
 function makeClone(cardBtn, rect) {
@@ -257,28 +253,26 @@ function makeClone(cardBtn, rect) {
   clone.style.height = rect.height + "px";
 
   const img = cardBtn.querySelector("img");
-  const cloneImg = document.createElement("img");
-  cloneImg.src = img ? img.src : "";
-  cloneImg.alt = "";
-  cloneImg.style.width = "100%";
-  cloneImg.style.height = "100%";
-  cloneImg.style.objectFit = "cover";
-  cloneImg.style.display = "block";
+  const imgClone = document.createElement("img");
+  imgClone.src = img ? img.src : "";
+  imgClone.alt = img ? img.alt : "";
+  imgClone.style.width = "100%";
+  imgClone.style.height = "100%";
+  imgClone.style.objectFit = "cover";
+  imgClone.style.display = "block";
 
-  clone.appendChild(cloneImg);
+  clone.appendChild(imgClone);
   return clone;
 }
 
-// ---------- CONFETTI (Canvas) ----------
+// ---------------- CONFETTI (CANVAS) ----------------
 let confettiRAF = null;
 
-function burstConfetti(durationMs = 1200) {
+function burstConfetti(durationMs = 800) {
   const canvas = document.getElementById("confettiCanvas");
   if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-
   const dpr = window.devicePixelRatio || 1;
 
   function resize() {
@@ -288,48 +282,45 @@ function burstConfetti(durationMs = 1200) {
     canvas.style.height = window.innerHeight + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-
   resize();
 
+  const start = performance.now();
   const pieces = [];
-  const count = 140;
+  const count = 120;
 
   for (let i = 0; i < count; i++) {
     pieces.push({
       x: Math.random() * window.innerWidth,
       y: -20 - Math.random() * 200,
-      vx: (Math.random() - 0.5) * 7,
+      vx: (Math.random() - 0.5) * 6,
       vy: 3 + Math.random() * 6,
-      r: 3 + Math.random() * 4,
+      r: 3 + Math.random() * 5,
       a: Math.random() * Math.PI * 2,
-      va: (Math.random() - 0.5) * 0.35
+      va: (Math.random() - 0.5) * 0.3
     });
   }
 
-  const colors = ["#FFD84D", "#35D05A", "#FF4D4D", "#FFFFFF"];
-  const start = performance.now();
+  const colors = ["#FFD84D", "#35D05A", "#4DA3FF", "#FF4D4D", "#FF7AD9", "#FFFFFF"];
 
-  if (confettiRAF) cancelAnimationFrame(confettiRAF);
-
-  function frame(now) {
-    const t = now - start;
+  function frame(t) {
+    const elapsed = t - start;
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     for (const p of pieces) {
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.04; // gravity
+      p.vy += 0.08;
       p.a += p.va;
 
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.a);
-      ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-      ctx.fillRect(-p.r, -p.r, p.r * 2, p.r * 2);
+      ctx.fillStyle = colors[(Math.random() * colors.length) | 0];
+      ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
       ctx.restore();
     }
 
-    if (t < durationMs) {
+    if (elapsed < durationMs) {
       confettiRAF = requestAnimationFrame(frame);
     } else {
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
@@ -337,13 +328,11 @@ function burstConfetti(durationMs = 1200) {
     }
   }
 
+  if (confettiRAF) cancelAnimationFrame(confettiRAF);
   confettiRAF = requestAnimationFrame(frame);
-
-  // keep canvas correct if they rotate / resize
-  window.addEventListener("resize", resize, { once: true });
 }
 
-// ---------- UTIL ----------
+// ---------------- UTIL ----------------
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = (Math.random() * (i + 1)) | 0;
@@ -354,7 +343,7 @@ function shuffle(arr) {
 
 function showApp() {
   const app = document.getElementById("app");
-  app.style.display = "block";
+  if (app) app.style.display = "block";
 }
 
 function hideSplash() {
@@ -364,9 +353,8 @@ function hideSplash() {
   setTimeout(() => splash.remove(), 400);
 }
 
-// ---------- STARTUP (your working splash flow) ----------
+// ---------------- STARTUP ----------------
 window.addEventListener("load", () => {
-  // Render menu behind splash so removing splash never shows black
   renderMenu();
   showApp();
 
@@ -403,6 +391,8 @@ window.addEventListener("load", () => {
       hideSplash();
     };
 
+    video.addEventListener("ended", endSplash, { once: true });
+
     const failToMenu = () => endSplash();
 
     const onPlaying = () => {
@@ -418,7 +408,6 @@ window.addEventListener("load", () => {
     };
 
     video.addEventListener("playing", onPlaying, { once: true });
-    video.addEventListener("ended", endSplash, { once: true });
     video.addEventListener("error", failToMenu, { once: true });
 
     try {
