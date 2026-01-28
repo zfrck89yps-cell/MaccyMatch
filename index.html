@@ -310,15 +310,14 @@
       border-radius: 18px;
       background: rgba(0,0,0,0.15);
       opacity: 0;
-      animation: popWord 4000ms ease forwards;
+      animation: popWord 6000ms ease-out forwards;
       pointer-events: none;
     }
 @keyframes popWord {
   0%   { transform: translateX(-50%) scale(0.8); opacity: 0; }
-  15%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
-  85%  { transform: translateX(-50%) scale(1.00); opacity: 1; } /* LONG HOLD */
-  100% { transform: translateX(-50%) scale(0.95); opacity: 0; }
-}
+  10%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
+  90%  { transform: translateX(-50%) scale(1.00); opacity: 1; } /* VERY LONG HOLD */
+  100% { transform: translateX(-50%) scale(0.98); opacity: 0; }
 }
     }
 
