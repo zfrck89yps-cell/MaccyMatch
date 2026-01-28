@@ -5,7 +5,6 @@
   <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-  <!-- iOS Home Screen icon -->
   <link rel="apple-touch-icon" href="Assets/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Maccy Match">
@@ -34,6 +33,10 @@
       opacity: 1;
       transition: opacity 350ms ease;
       touch-action: manipulation;
+
+      /* ✅ IMPORTANT: allows tap */
+      pointer-events: auto;
+      cursor: pointer;
     }
     #splash.hidden { opacity: 0; pointer-events: none; }
 
@@ -108,7 +111,7 @@
       inset: 0;
       display: flex;
       justify-content: center;
-      padding: 32vh 42px 110px; /* card block starts lower */
+      padding: 32vh 42px 110px;
     }
 
     .menuGrid {
@@ -166,22 +169,26 @@
       z-index: 5;
     }
 
-    /* ---------- MODE BUTTONS (Match / Memory) ---------- */
+    /* ---------- SWITCH MODE BUTTON (bottom-right) ---------- */
     .modeBtn {
       position: fixed;
       right: 0;
       bottom: 0;
-      width: 300px;   /* your ~4× size */
-      height: 300px;  /* keep square click area */
+
+      /* ✅ size (adjust if you want) */
+      width: 300px;
+      height: 300px;
+
       border: none;
       background: transparent;
       padding: 0;
       margin: 0;
       cursor: pointer;
-      z-index: 20;
-      transform: translateZ(0);
+      z-index: 10;
+      transform-origin: bottom right;
     }
     .modeBtn:active { transform: scale(0.98); }
+
     .modeBtn img {
       width: 100%;
       height: 100%;
@@ -190,13 +197,7 @@
       filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
     }
 
-    /* if you want it even tighter into the corner */
-    .modeBtn.tight {
-      right: -10px;
-      bottom: -14px;
-    }
-
-    /* ---------- GAME LAYOUT (8 cards) ---------- */
+    /* ---------- GAME LAYOUT ---------- */
     .gameWrap {
       position: absolute;
       inset: 0;
@@ -208,7 +209,7 @@
     .gameGrid {
       width: min(1100px, 92vw);
       display: grid;
-      grid-template-columns: repeat(4, 1fr); /* 8 = 4x2 */
+      grid-template-columns: repeat(4, 1fr); /* 8 cards */
       gap: 16px;
       align-content: start;
     }
@@ -228,123 +229,85 @@
       transform: translateZ(0);
     }
 
-    /* Memory flip structure */
-    .cardInner {
-      position: absolute;
-      inset: 0;
-      border-radius: 22px;
-      overflow: hidden;
-    }
-
-    .cardFace {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backface-visibility: hidden;
-    }
-
-    .cardFront img {
+    .gameCard img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
     }
 
-    /* Back image (your Cardback.PNG) */
-    .cardBack {
-      background: rgba(255,255,255,0.20);
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-    }
-    .cardBack img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* flip behaviour (simple + iPad-safe) */
-    .gameCard .cardFront { display: none; }
-    .gameCard.flipped .cardBack { display: none; }
-    .gameCard.flipped .cardFront { display: block; }
+    /* Memory flip: simple visibility swap (Safari-safe) */
+    .gameCard .front { display: none; }
+    .gameCard.flipped .back { display: none; }
+    .gameCard.flipped .front { display: block; }
 
     .gameCard.matched {
-      pointer-events: none;
-      outline: 6px solid rgba(255,255,255,0.55);
       opacity: 0;
-      transition: opacity 220ms ease;
+      pointer-events: none;
+      transition: opacity 260ms ease;
     }
 
-    /* ---------- BACK BUTTON (game) ---------- */
+    /* Back button (top-left) */
     .backBtn {
       position: fixed;
-      left: 14px;
-      top: 14px;
-      z-index: 30;
+      top: 18px;
+      left: 18px;
+      z-index: 20;
       border: none;
       border-radius: 14px;
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.85);
-      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.95);
+      font-size: 20px;
       font-weight: 900;
-      font-size: 16px;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.2);
       cursor: pointer;
+      user-select: none;
     }
     .backBtn:active { transform: scale(0.98); }
 
-    /* ---------- WORD FLASH (longer hold) ---------- */
-    .wordFlash {
-      position: fixed;
-      left: 50%;
-      top: 18%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      font-weight: 1000;
-      font-size: clamp(44px, 7vw, 120px);
-      color: #FFD84D;
-      text-shadow: 0 5px 0 #C97A00, 0 16px 30px rgba(0,0,0,0.35);
-      padding: 10px 18px;
-      border-radius: 22px;
-      background: rgba(0,0,0,0.18);
-      animation: popWord 2000ms ease forwards; /* ✅ longer */
-      pointer-events: none;
-      user-select: none;
-      white-space: nowrap;
-    }
-
-    @keyframes popWord {
-      0%   { transform: translateX(-50%) scale(0.8); opacity: 0; }
-      15%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
-      70%  { transform: translateX(-50%) scale(1.00); opacity: 1; } /* HOLD */
-      100% { transform: translateX(-50%) scale(0.95); opacity: 0; }
-    }
-
-    /* ---------- WIN VIDEO OVERLAY ---------- */
-    .winVideoOverlay {
+    /* Word overlay */
+    .wordOverlay {
       position: fixed;
       inset: 0;
-      z-index: 9999;
+      z-index: 9996;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0,0,0,0.35);
+      pointer-events: none;
     }
-    .winVideoOverlay video {
-      width: min(900px, 92vw);
-      max-height: 86vh;
+    .wordOverlay .word {
+      font-size: clamp(42px, 7vw, 110px);
+      font-weight: 1000;
+      color: #FFD84D;
+      text-shadow: 0 5px 0 #C97A00, 0 16px 30px rgba(0,0,0,0.35);
+      padding: 18px 30px;
       border-radius: 26px;
-      box-shadow: 0 18px 50px rgba(0,0,0,0.45);
-      background: #000;
+      background: rgba(0,0,0,0.15);
     }
 
     /* Confetti canvas */
     #confettiCanvas {
       position: fixed;
       inset: 0;
-      z-index: 9997;
+      z-index: 9995;
       pointer-events: none;
+    }
+
+    /* Welldone video overlay */
+    .wellDoneOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wellDoneOverlay video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -367,6 +330,7 @@
   <!-- Confetti -->
   <canvas id="confettiCanvas"></canvas>
 
+  <!-- IMPORTANT: bump this v= number when testing -->
   <script src="./app.js?v=99"></script>
 </body>
 </html>
