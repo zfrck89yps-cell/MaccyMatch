@@ -336,13 +336,13 @@ welldoneVideo: "./Assets/Welldone .MP4",
     // keep the WORD on screen longer
 setTimeout(() => {
   wf.remove();
-}, 4000);
+}, 3000);
 
 // keep the smash layer timing the same so gameplay can continue
 setTimeout(() => {
   layer.remove();
   onDone && onDone();
-}, 650);
+}, 3000);
   }
 
   function makeClone(cardBtn, rect) {
@@ -370,7 +370,7 @@ setTimeout(() => {
   // ---------------- CONFETTI + STARS ----------------
   let raf = null;
 
-  function burstConfettiAndStars(durationMs = 800) {
+  function burstConfettiAndStars(durationMs = 2500) {
     const c = canvas();
     if (!c) return;
     const ctx = c.getContext("2d");
