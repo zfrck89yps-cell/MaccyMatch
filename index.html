@@ -313,11 +313,12 @@
       animation: popWord 4000ms ease forwards;
       pointer-events: none;
     }
-  @keyframes popWord {
+@keyframes popWord {
   0%   { transform: translateX(-50%) scale(0.8); opacity: 0; }
   15%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
-  70%  { transform: translateX(-50%) scale(1.00); opacity: 1; } /* HOLD */
+  85%  { transform: translateX(-50%) scale(1.00); opacity: 1; } /* LONG HOLD */
   100% { transform: translateX(-50%) scale(0.95); opacity: 0; }
+}
 }
     }
 
