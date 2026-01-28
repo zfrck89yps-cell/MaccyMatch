@@ -283,35 +283,31 @@ welldoneVideo: "./Assets/Welldone .MP4",
   }
 
 // ---------------- MATCH ANIMATION ----------------
-// Drop this whole section into your app.js (replaces your existing flyTogetherAndBurst + makeClone)
-
 function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-  const WORD_HOLD_MS = 7000; // 👈 set to 3000 / 5000 / 7000 etc
+  const HOLD_MS = 7000;   // how long EVERYTHING stays
+  const FADE_MS = 500;    // fade duration at the end
 
   // overlay layer
   const layer = document.createElement("div");
   layer.className = "smashLayer";
   document.body.appendChild(layer);
 
-  // get positions
+  // positions
   const rA = cardA.getBoundingClientRect();
   const rB = cardB.getBoundingClientRect();
 
-  // clones (so the real cards can be removed later cleanly)
+  // clones
   const cloneA = makeClone(cardA, rA);
   const cloneB = makeClone(cardB, rB);
   layer.appendChild(cloneA);
   layer.appendChild(cloneB);
 
-  // word overlay
+  // word overlay (FORCE duration to match HOLD_MS + FADE_MS)
   const wf = document.createElement("div");
-wf.className = "wordFlash";
-wf.textContent = word;
-
-// FORCE the word to last exactly as long as WORD_HOLD_MS
-wf.style.animation = `popWord ${WORD_HOLD_MS}ms ease forwards`;
-
-document.body.appendChild(wf);
+  wf.className = "wordFlash";
+  wf.textContent = word;
+  wf.style.animation = `popWord ${HOLD_MS + FADE_MS}ms ease forwards`;
+  document.body.appendChild(wf);
 
   // center point
   const cx = window.innerWidth / 2;
@@ -349,7 +345,7 @@ document.body.appendChild(wf);
     flyOpts
   );
 
-  // optional tiny "impact" bounce
+  // tiny impact bounce
   setTimeout(() => {
     cloneA.animate(
       [
@@ -359,6 +355,7 @@ document.body.appendChild(wf);
       ],
       { duration: 220, easing: "ease-out", fill: "forwards" }
     );
+
     cloneB.animate(
       [
         { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
@@ -374,18 +371,18 @@ document.body.appendChild(wf);
     burstConfettiAndStars(850);
   }, 360);
 
-  // fade clones near the end (so image stays up while word stays up)
+  // HOLD (do nothing). Then fade BOTH clones at the same time as the word finishes
   setTimeout(() => {
-    cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, fill: "forwards" });
-    cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, fill: "forwards" });
-  }, WORD_HOLD_MS - 450);
+    cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
+    cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
+  }, HOLD_MS);
 
-  // cleanup + allow gameplay to continue
+  // cleanup AFTER fade finishes
   setTimeout(() => {
     wf.remove();
     layer.remove();
     onDone && onDone();
-  }, WORD_HOLD_MS);
+  }, HOLD_MS + FADE_MS);
 }
 
 function makeClone(cardBtn, rect) {
@@ -396,9 +393,8 @@ function makeClone(cardBtn, rect) {
   clone.style.width = rect.width + "px";
   clone.style.height = rect.height + "px";
 
-  // IMPORTANT: for memory mode, the first <img> might be the cardback.
-  // If the card is flipped, prefer the visible front image.
-  let img =
+  // if memory mode and flipped, prefer front image
+  const img =
     cardBtn.querySelector(".front img") ||
     cardBtn.querySelector("img");
 
