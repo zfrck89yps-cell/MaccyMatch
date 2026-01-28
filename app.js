@@ -24,8 +24,8 @@
       img: "./Assets/Splash.PNG?v=99",
       video: "./Assets/Splash.mp4?v=99",
     },
-    cardback: "./Assets/Cardback .PNG",
-    welldoneVideo: "./Assets/Welldone .MP4",
+    cardback: "./Assets/",
+    welldoneVideo: "./Assets/Cardback .PNG",
     categoryThumbs: {
       animals: "./Assets/Animals.PNG",
     },
