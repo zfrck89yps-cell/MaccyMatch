@@ -333,11 +333,16 @@ welldoneVideo: "./Assets/Welldone .MP4",
       cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" });
     }, 420);
 
-    setTimeout(() => {
-      wf.remove();
-      layer.remove();
-      onDone && onDone();
-    }, 650);
+    // keep the WORD on screen longer
+setTimeout(() => {
+  wf.remove();
+}, 4000);
+
+// keep the smash layer timing the same so gameplay can continue
+setTimeout(() => {
+  layer.remove();
+  onDone && onDone();
+}, 650);
   }
 
   function makeClone(cardBtn, rect) {
