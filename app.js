@@ -282,90 +282,133 @@ welldoneVideo: "./Assets/Welldone .MP4",
     return ASSETS.animals;
   }
 
-  // ---------------- MATCH ANIMATION ----------------
-  function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-    const layer = document.createElement("div");
-    layer.className = "smashLayer";
-    document.body.appendChild(layer);
+// ---------------- MATCH ANIMATION ----------------
+// Drop this whole section into your app.js (replaces your existing flyTogetherAndBurst + makeClone)
 
-    const rA = cardA.getBoundingClientRect();
-    const rB = cardB.getBoundingClientRect();
+function flyTogetherAndBurst(cardA, cardB, word, onDone) {
+  const WORD_HOLD_MS = 7000; // 👈 set to 3000 / 5000 / 7000 etc
 
-    const cloneA = makeClone(cardA, rA);
-    const cloneB = makeClone(cardB, rB);
-    layer.appendChild(cloneA);
-    layer.appendChild(cloneB);
+  // overlay layer
+  const layer = document.createElement("div");
+  layer.className = "smashLayer";
+  document.body.appendChild(layer);
 
-    // word flash
-    const wf = document.createElement("div");
-    wf.className = "wordFlash";
-    wf.textContent = word;
-    document.body.appendChild(wf);
+  // get positions
+  const rA = cardA.getBoundingClientRect();
+  const rB = cardB.getBoundingClientRect();
 
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
+  // clones (so the real cards can be removed later cleanly)
+  const cloneA = makeClone(cardA, rA);
+  const cloneB = makeClone(cardB, rB);
+  layer.appendChild(cloneA);
+  layer.appendChild(cloneB);
 
-    const toCenterA = { x: cx - (rA.left + rA.width / 2), y: cy - (rA.top + rA.height / 2) };
-    const toCenterB = { x: cx - (rB.left + rB.width / 2), y: cy - (rB.top + rB.height / 2) };
+  // word overlay
+  const wf = document.createElement("div");
+  wf.className = "wordFlash";
+  wf.textContent = word;
+  document.body.appendChild(wf);
 
-    const optsIn = { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" };
+  // center point
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / 2;
 
+  const toCenterA = {
+    x: cx - (rA.left + rA.width / 2),
+    y: cy - (rA.top + rA.height / 2),
+  };
+  const toCenterB = {
+    x: cx - (rB.left + rB.width / 2),
+    y: cy - (rB.top + rB.height / 2),
+  };
+
+  // fly-in
+  const flyOpts = {
+    duration: 320,
+    easing: "cubic-bezier(.2,.9,.2,1)",
+    fill: "forwards",
+  };
+
+  cloneA.animate(
+    [
+      { transform: "translate(0px,0px) scale(1)" },
+      { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
+    ],
+    flyOpts
+  );
+
+  cloneB.animate(
+    [
+      { transform: "translate(0px,0px) scale(1)" },
+      { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
+    ],
+    flyOpts
+  );
+
+  // optional tiny "impact" bounce
+  setTimeout(() => {
     cloneA.animate(
-      [{ transform: `translate(0px,0px) scale(1)` },
-       { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` }],
-      optsIn
+      [
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(0.98)` },
+        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.05)` },
+      ],
+      { duration: 220, easing: "ease-out", fill: "forwards" }
     );
-
     cloneB.animate(
-      [{ transform: `translate(0px,0px) scale(1)` },
-       { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` }],
-      optsIn
+      [
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(0.98)` },
+        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.05)` },
+      ],
+      { duration: 220, easing: "ease-out", fill: "forwards" }
     );
+  }, 320);
 
-    // burst confetti+stars timed at "impact"
-    setTimeout(() => {
-      burstConfettiAndStars(850);
-    }, 240);
+  // confetti + stars near impact
+  setTimeout(() => {
+    burstConfettiAndStars(850);
+  }, 360);
 
-    // fade clones out
-    setTimeout(() => {
-      cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" });
-      cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" });
-    }, 420);
+  // fade clones near the end (so image stays up while word stays up)
+  setTimeout(() => {
+    cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, fill: "forwards" });
+    cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, fill: "forwards" });
+  }, WORD_HOLD_MS - 450);
 
-    // keep the WORD on screen longer
-setTimeout(() => {
-  wf.remove();
-}, 3000);
+  // cleanup + allow gameplay to continue
+  setTimeout(() => {
+    wf.remove();
+    layer.remove();
+    onDone && onDone();
+  }, WORD_HOLD_MS);
+}
 
-// keep the smash layer timing the same so gameplay can continue
-setTimeout(() => {
-  layer.remove();
-  onDone && onDone();
-}, 3000);
-  }
+function makeClone(cardBtn, rect) {
+  const clone = document.createElement("div");
+  clone.className = "smashClone";
+  clone.style.left = rect.left + "px";
+  clone.style.top = rect.top + "px";
+  clone.style.width = rect.width + "px";
+  clone.style.height = rect.height + "px";
 
-  function makeClone(cardBtn, rect) {
-    const clone = document.createElement("div");
-    clone.className = "smashClone";
-    clone.style.left = rect.left + "px";
-    clone.style.top = rect.top + "px";
-    clone.style.width = rect.width + "px";
-    clone.style.height = rect.height + "px";
+  // IMPORTANT: for memory mode, the first <img> might be the cardback.
+  // If the card is flipped, prefer the visible front image.
+  let img =
+    cardBtn.querySelector(".front img") ||
+    cardBtn.querySelector("img");
 
-    // prefer visible image
-    const img = cardBtn.querySelector("img");
-    const imgClone = document.createElement("img");
-    imgClone.src = img?.src || "";
-    imgClone.alt = img?.alt || "";
-    imgClone.style.width = "100%";
-    imgClone.style.height = "100%";
-    imgClone.style.objectFit = "cover";
-    imgClone.style.display = "block";
-    clone.appendChild(imgClone);
+  const imgClone = document.createElement("img");
+  imgClone.src = img?.src || "";
+  imgClone.alt = img?.alt || "";
+  imgClone.style.width = "100%";
+  imgClone.style.height = "100%";
+  imgClone.style.objectFit = "cover";
+  imgClone.style.display = "block";
 
-    return clone;
-  }
+  clone.appendChild(imgClone);
+  return clone;
+}
 
   // ---------------- CONFETTI + STARS ----------------
   let raf = null;
