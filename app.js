@@ -1,10 +1,8 @@
-I’ve gone down too 2000 but it’s not made much difference 
-
 /* app.js
    - Match Menu + Memory Menu (toggle buttons)
    - 8 cards (4 pairs) every round
    - Random 4-pair selection each round from ALL animals
-   - Memory uses Cardback_.PNG (face down)
+   - Memory uses Cardback .PNG (face down)
    - Win: plays Welldone .MP4 for ~6s then returns
    - Match animation: fly together + confetti + stars + word flash
    - Back button on game screens -> previous menu
@@ -12,7 +10,6 @@ I’ve gone down too 2000 but it’s not made much difference
 
 (() => {
   const ASSETS = {
-    // NOTE: filenames MUST match your GitHub exactly (including spaces/case)
     backgrounds: {
       matchMenu: "./Assets/Menu-background.png",
       memoryMenu: "./Assets/Memory-menu.png",
@@ -26,12 +23,11 @@ I’ve gone down too 2000 but it’s not made much difference
       img: "./Assets/Splash.PNG?v=99",
       video: "./Assets/Splash.mp4?v=99",
     },
- cardback: "./Assets/Cardback .PNG",
-welldoneVideo: "./Assets/Welldone .MP4",
+    cardback: "./Assets/Cardback .PNG",
+    welldoneVideo: "./Assets/Welldone .MP4",
     categoryThumbs: {
       animals: "./Assets/Animals.PNG",
     },
-    // All animals available (used for random selection)
     animals: [
       { key: "bear", src: "./Assets/Bear.png" },
       { key: "cat", src: "./Assets/Cat.png" },
@@ -56,7 +52,7 @@ welldoneVideo: "./Assets/Welldone .MP4",
   const app = () => document.getElementById("app");
   const canvas = () => document.getElementById("confettiCanvas");
 
-  let lastMenu = "matchMenu"; // so back button knows where to go
+  let lastMenu = "matchMenu";
 
   // ---------------- MENUS ----------------
   function renderMatchMenu() {
@@ -68,7 +64,6 @@ welldoneVideo: "./Assets/Welldone .MP4",
     el.innerHTML = `
       <div class="menuWrap">
         <div class="menuGrid" aria-label="Categories">
-
           <button class="catCardBtn" id="catAnimals" aria-label="Animals">
             <img class="catImg" src="${ASSETS.categoryThumbs.animals}" alt="Animals">
           </button>
@@ -78,7 +73,6 @@ welldoneVideo: "./Assets/Welldone .MP4",
           <button class="catCardBtn placeholder" disabled>Numbers</button>
           <button class="catCardBtn placeholder" disabled>Colours</button>
           <button class="catCardBtn placeholder" disabled>Shapes</button>
-
         </div>
       </div>
 
@@ -105,7 +99,6 @@ welldoneVideo: "./Assets/Welldone .MP4",
     el.innerHTML = `
       <div class="menuWrap">
         <div class="menuGrid" aria-label="Categories">
-
           <button class="catCardBtn" id="catAnimals" aria-label="Animals">
             <img class="catImg" src="${ASSETS.categoryThumbs.animals}" alt="Animals">
           </button>
@@ -115,7 +108,6 @@ welldoneVideo: "./Assets/Welldone .MP4",
           <button class="catCardBtn placeholder" disabled>Numbers</button>
           <button class="catCardBtn placeholder" disabled>Colours</button>
           <button class="catCardBtn placeholder" disabled>Shapes</button>
-
         </div>
       </div>
 
@@ -134,9 +126,7 @@ welldoneVideo: "./Assets/Welldone .MP4",
   }
 
   function renderBackButton() {
-    // remove existing back if any
     document.querySelector(".backBtn")?.remove();
-
     const btn = document.createElement("button");
     btn.className = "backBtn";
     btn.textContent = "← Back";
@@ -178,7 +168,6 @@ welldoneVideo: "./Assets/Welldone .MP4",
         `;
       }
 
-      // match mode (face up)
       return `
         <button class="gameCard" data-key="${c.key}" data-word="${c.key}" data-id="${c.id}" aria-label="${c.key}">
           <img src="${c.src}" alt="${c.key}">
@@ -202,7 +191,6 @@ welldoneVideo: "./Assets/Welldone .MP4",
     let locked = false;
     let matchedCount = 0;
 
-    // memory starts face-down
     if (mode === "memory") {
       grid.querySelectorAll(".gameCard").forEach(btn => btn.classList.remove("flipped"));
     }
@@ -213,11 +201,8 @@ welldoneVideo: "./Assets/Welldone .MP4",
         if (btn.classList.contains("matched")) return;
         if (btn === first) return;
 
-        if (mode === "memory") {
-          btn.classList.add("flipped");
-        } else {
-          btn.classList.add("selected");
-        }
+        if (mode === "memory") btn.classList.add("flipped");
+        else btn.classList.add("selected");
 
         if (!first) {
           first = btn;
@@ -236,8 +221,6 @@ welldoneVideo: "./Assets/Welldone .MP4",
           flyTogetherAndBurst(first, second, word, () => {
             first.classList.add("matched");
             second.classList.add("matched");
-
-            // tidy selection state
             first.classList.remove("selected");
             second.classList.remove("selected");
 
@@ -246,13 +229,10 @@ welldoneVideo: "./Assets/Welldone .MP4",
             second = null;
             locked = false;
 
-            if (matchedCount === 8) {
-              winSequence();
-            }
+            if (matchedCount === 8) winSequence();
           });
 
         } else {
-          // mismatch
           setTimeout(() => {
             if (mode === "memory") {
               first.classList.remove("flipped");
@@ -270,7 +250,6 @@ welldoneVideo: "./Assets/Welldone .MP4",
     });
 
     function winSequence() {
-      // show welldone video (6 seconds) then go back to menu
       showWinVideo(() => {
         removeBackButton();
         if (lastMenu === "memoryMenu") renderMemoryMenu();
@@ -284,133 +263,92 @@ welldoneVideo: "./Assets/Welldone .MP4",
     return ASSETS.animals;
   }
 
-// ---------------- MATCH ANIMATION ----------------
-function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-  const HOLD_MS = 2000;   // how long EVERYTHING stays
-  const FADE_MS = 500;    // fade duration at the end
+  // ---------------- MATCH ANIMATION ----------------
+  function flyTogetherAndBurst(cardA, cardB, word, onDone) {
+    const HOLD_MS = 2000;
+    const FADE_MS = 500;
 
-  // overlay layer
-  const layer = document.createElement("div");
-  layer.className = "smashLayer";
-  document.body.appendChild(layer);
+    const layer = document.createElement("div");
+    layer.className = "smashLayer";
+    document.body.appendChild(layer);
 
-  // positions
-  const rA = cardA.getBoundingClientRect();
-  const rB = cardB.getBoundingClientRect();
+    const rA = cardA.getBoundingClientRect();
+    const rB = cardB.getBoundingClientRect();
 
-  // clones
-  const cloneA = makeClone(cardA, rA);
-  const cloneB = makeClone(cardB, rB);
-  layer.appendChild(cloneA);
-  layer.appendChild(cloneB);
+    const cloneA = makeClone(cardA, rA);
+    const cloneB = makeClone(cardB, rB);
+    layer.appendChild(cloneA);
+    layer.appendChild(cloneB);
 
-  // word overlay (FORCE duration to match HOLD_MS + FADE_MS)
-  const wf = document.createElement("div");
-  wf.className = "wordFlash";
-  wf.textContent = word;
-  wf.style.animation = `popWord ${HOLD_MS + FADE_MS}ms ease forwards`;
-  document.body.appendChild(wf);
+    const wf = document.createElement("div");
+    wf.className = "wordFlash";
+    wf.textContent = word;
+    wf.style.animationDuration = `${HOLD_MS + FADE_MS}ms`;
+    document.body.appendChild(wf);
 
-  // center point
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight / 2;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
 
-  const toCenterA = {
-    x: cx - (rA.left + rA.width / 2),
-    y: cy - (rA.top + rA.height / 2),
-  };
-  const toCenterB = {
-    x: cx - (rB.left + rB.width / 2),
-    y: cy - (rB.top + rB.height / 2),
-  };
+    const toCenterA = {
+      x: cx - (rA.left + rA.width / 2),
+      y: cy - (rA.top + rA.height / 2),
+    };
+    const toCenterB = {
+      x: cx - (rB.left + rB.width / 2),
+      y: cy - (rB.top + rB.height / 2),
+    };
 
-  // fly-in
-  const flyOpts = {
-    duration: 320,
-    easing: "cubic-bezier(.2,.9,.2,1)",
-    fill: "forwards",
-  };
+    const flyOpts = { duration: 320, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" };
 
-  cloneA.animate(
-    [
-      { transform: "translate(0px,0px) scale(1)" },
-      { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
-    ],
-    flyOpts
-  );
-
-  cloneB.animate(
-    [
-      { transform: "translate(0px,0px) scale(1)" },
-      { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
-    ],
-    flyOpts
-  );
-
-  // tiny impact bounce
-  setTimeout(() => {
     cloneA.animate(
-      [
-        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` },
-        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(0.98)` },
-        { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.05)` },
-      ],
-      { duration: 220, easing: "ease-out", fill: "forwards" }
+      [{ transform: "translate(0px,0px) scale(1)" },
+       { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` }],
+      flyOpts
     );
 
     cloneB.animate(
-      [
-        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` },
-        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(0.98)` },
-        { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.05)` },
-      ],
-      { duration: 220, easing: "ease-out", fill: "forwards" }
+      [{ transform: "translate(0px,0px) scale(1)" },
+       { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` }],
+      flyOpts
     );
-  }, 320);
 
-  // confetti + stars near impact
-  setTimeout(() => {
-    burstConfettiAndStars(850);
-  }, 360);
+    setTimeout(() => burstConfettiAndStars(850), 360);
 
-  // HOLD (do nothing). Then fade BOTH clones at the same time as the word finishes
-  setTimeout(() => {
-    cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
-    cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
-  }, HOLD_MS);
+    setTimeout(() => {
+      cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
+      cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
+    }, HOLD_MS);
 
-  // cleanup AFTER fade finishes
-  setTimeout(() => {
-    wf.remove();
-    layer.remove();
-    onDone && onDone();
-  }, HOLD_MS + FADE_MS);
-}
+    setTimeout(() => {
+      wf.remove();
+      layer.remove();
+      onDone && onDone();
+    }, HOLD_MS + FADE_MS);
+  }
 
-function makeClone(cardBtn, rect) {
-  const clone = document.createElement("div");
-  clone.className = "smashClone";
-  clone.style.left = rect.left + "px";
-  clone.style.top = rect.top + "px";
-  clone.style.width = rect.width + "px";
-  clone.style.height = rect.height + "px";
+  function makeClone(cardBtn, rect) {
+    const clone = document.createElement("div");
+    clone.className = "smashClone";
+    clone.style.left = rect.left + "px";
+    clone.style.top = rect.top + "px";
+    clone.style.width = rect.width + "px";
+    clone.style.height = rect.height + "px";
 
-  // if memory mode and flipped, prefer front image
-  const img =
-    cardBtn.querySelector(".front img") ||
-    cardBtn.querySelector("img");
+    const img =
+      cardBtn.querySelector(".front img") ||
+      cardBtn.querySelector("img");
 
-  const imgClone = document.createElement("img");
-  imgClone.src = img?.src || "";
-  imgClone.alt = img?.alt || "";
-  imgClone.style.width = "100%";
-  imgClone.style.height = "100%";
-  imgClone.style.objectFit = "cover";
-  imgClone.style.display = "block";
+    const imgClone = document.createElement("img");
+    imgClone.src = img?.src || "";
+    imgClone.alt = img?.alt || "";
+    imgClone.style.width = "100%";
+    imgClone.style.height = "100%";
+    imgClone.style.objectFit = "cover";
+    imgClone.style.display = "block";
 
-  clone.appendChild(imgClone);
-  return clone;
-}
+    clone.appendChild(imgClone);
+    return clone;
+  }
 
   // ---------------- CONFETTI + STARS ----------------
   let raf = null;
@@ -431,7 +369,6 @@ function makeClone(cardBtn, rect) {
     resize();
 
     const start = performance.now();
-
     const colors = ["#FFD84D", "#35D05A", "#4DA3FF", "#FF4D4D", "#FF7AD9", "#FFFFFF"];
 
     const particles = [];
@@ -454,7 +391,6 @@ function makeClone(cardBtn, rect) {
         size: isStar ? (6 + Math.random() * 10) : (4 + Math.random() * 6),
         isStar,
         color: colors[(Math.random() * colors.length) | 0],
-        life: 0.9 + Math.random() * 0.6
       });
     }
 
@@ -492,17 +428,15 @@ function makeClone(cardBtn, rect) {
       for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.10; // gravity
+        p.vy += 0.10;
         p.rot += p.vrot;
 
         const fade = Math.max(0, 1 - elapsed / durationMs);
         ctx.globalAlpha = fade;
-
         ctx.fillStyle = p.color;
 
-        if (p.isStar) {
-          drawStar(p.x, p.y, p.size * 0.5, p.rot);
-        } else {
+        if (p.isStar) drawStar(p.x, p.y, p.size * 0.5, p.rot);
+        else {
           ctx.save();
           ctx.translate(p.x, p.y);
           ctx.rotate(p.rot);
@@ -513,9 +447,8 @@ function makeClone(cardBtn, rect) {
 
       ctx.globalAlpha = 1;
 
-      if (elapsed < durationMs) {
-        raf = requestAnimationFrame(frame);
-      } else {
+      if (elapsed < durationMs) raf = requestAnimationFrame(frame);
+      else {
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
         raf = null;
       }
@@ -534,7 +467,7 @@ function makeClone(cardBtn, rect) {
     vid.src = ASSETS.welldoneVideo + "?v=" + Date.now();
     vid.playsInline = true;
     vid.setAttribute("webkit-playsinline", "");
-    vid.muted = true; // safest for iPad autoplay
+    vid.muted = true; // autoplay safe on iOS
     vid.autoplay = true;
 
     overlay.appendChild(vid);
@@ -545,9 +478,7 @@ function makeClone(cardBtn, rect) {
       onDone && onDone();
     };
 
-    // Try play; if blocked, still fallback after 6s
-    vid.play().catch(() => { /* ignore */ });
-
+    vid.play().catch(() => {});
     setTimeout(cleanup, 6000);
   }
 
@@ -578,88 +509,78 @@ function makeClone(cardBtn, rect) {
     setTimeout(() => splash.remove(), 400);
   }
 
-// ---------------- STARTUP (splash flow) ----------------
-window.addEventListener("load", () => {
-  renderMatchMenu();
-  showApp();
+  // ---------------- STARTUP (splash flow) ----------------
+  window.addEventListener("load", () => {
+    renderMatchMenu();
+    showApp();
 
-  const splash = document.getElementById("splash");
-  const tapText = document.getElementById("tapText");
-  const img = document.getElementById("splashImg");
-  const video = document.getElementById("splashVideo");
+    const splash = document.getElementById("splash");
+    const tapText = document.getElementById("tapText");
+    const img = document.getElementById("splashImg");
+    const video = document.getElementById("splashVideo");
 
-  if (!splash || !video || !img || !tapText) return;
+    if (!splash || !video || !img || !tapText) return;
 
-  img.style.display = "block";
-  img.style.opacity = "1";
-  video.style.display = "none";
-  tapText.style.display = "block";
-
-  let started = false;
-
-  const start = async (e) => {
-    if (started) return;
-    started = true;
-
-    // iOS: make sure the gesture counts
-    if (e) {
-      e.preventDefault?.();
-      e.stopPropagation?.();
-    }
-
-    tapText.textContent = "Loading…";
+    img.style.display = "block";
+    video.style.display = "none";
     tapText.style.display = "block";
 
-    // cache-bust mp4
-    video.src = "./Assets/Splash.mp4?v=" + Date.now();
-    video.currentTime = 0;
+    let started = false;
 
-    // ✅ iOS reliability: start muted so play() succeeds
-    video.muted = true;
-    video.volume = 1.0;
+    const start = async (e) => {
+      if (started) return;
+      started = true;
 
-    let endedAlready = false;
-    const endSplash = () => {
-      if (endedAlready) return;
-      endedAlready = true;
-      hideSplash();
-    };
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
 
-    video.addEventListener("ended", endSplash, { once: true });
-    video.addEventListener("error", endSplash, { once: true });
+      tapText.textContent = "Loading…";
+      tapText.style.display = "block";
 
-    const onPlaying = () => {
-      tapText.style.display = "none";
-      video.style.display = "block";
-      img.style.display = "none";
+      video.src = "./Assets/Splash.mp4?v=" + Date.now();
+      video.currentTime = 0;
 
-      // ✅ try to unmute AFTER it’s playing (works if allowed by iOS)
+      // iOS: must begin muted for reliability
+      video.muted = true;
+      video.volume = 1.0;
+
+      let endedAlready = false;
+      const endSplash = () => {
+        if (endedAlready) return;
+        endedAlready = true;
+        hideSplash();
+      };
+
+      video.addEventListener("ended", endSplash, { once: true });
+      video.addEventListener("error", endSplash, { once: true });
+
+      video.addEventListener("playing", () => {
+        tapText.style.display = "none";
+        video.style.display = "block";
+        img.style.display = "none";
+
+        // try to unmute after play starts (may still be blocked by iOS)
+        try {
+          video.muted = false;
+          video.volume = 1.0;
+        } catch (_) {}
+
+        const ms = (Number.isFinite(video.duration) && video.duration > 0)
+          ? Math.ceil(video.duration * 1000) + 400
+          : 4500;
+
+        setTimeout(endSplash, ms);
+      }, { once: true });
+
       try {
-        video.muted = false;
-        video.volume = 1.0;
-      } catch (_) {}
-
-      const ms = (Number.isFinite(video.duration) && video.duration > 0)
-        ? Math.ceil(video.duration * 1000) + 400
-        : 4500;
-
-      setTimeout(endSplash, ms);
+        await video.play();
+      } catch (_) {
+        endSplash();
+      }
     };
 
-    video.addEventListener("playing", onPlaying, { once: true });
-
-    try {
-      await video.play();
-    } catch (err) {
-      // if still blocked, just end splash rather than getting stuck
-      endSplash();
-    }
-  };
-
-  // ✅ Use ALL of these so iPad Safari always triggers it
-  splash.addEventListener("touchstart", start, { passive: false });
-  splash.addEventListener("pointerdown", start);
-  splash.addEventListener("click", start);
-}); // <-- closes window.addEventListener("load", ...)
-
-})(); // <-- closes the (() => { ... }) IIFE  ✅ THIS IS WHAT YOU’RE MISSING
+    splash.addEventListener("touchstart", start, { passive: false });
+    splash.addEventListener("pointerdown", start);
+    splash.addEventListener("click", start);
+  });
+})();
