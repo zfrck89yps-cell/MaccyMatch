@@ -284,7 +284,7 @@ welldoneVideo: "./Assets/Welldone .MP4",
 
 // ---------------- MATCH ANIMATION ----------------
 function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-  const HOLD_MS = 3500;   // how long EVERYTHING stays
+  const HOLD_MS = 2000;   // how long EVERYTHING stays
   const FADE_MS = 500;    // fade duration at the end
 
   // overlay layer
