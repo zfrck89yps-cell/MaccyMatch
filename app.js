@@ -578,76 +578,86 @@ function makeClone(cardBtn, rect) {
     setTimeout(() => splash.remove(), 400);
   }
 
-  // ---------------- STARTUP (splash flow) ----------------
-  window.addEventListener("load", () => {
-    renderMatchMenu();
-    showApp();
+// ---------------- STARTUP (splash flow) ----------------
+window.addEventListener("load", () => {
+  renderMatchMenu();
+  showApp();
 
-    const splash = document.getElementById("splash");
-    const tapText = document.getElementById("tapText");
-    const img = document.getElementById("splashImg");
-    const video = document.getElementById("splashVideo");
+  const splash = document.getElementById("splash");
+  const tapText = document.getElementById("tapText");
+  const img = document.getElementById("splashImg");
+  const video = document.getElementById("splashVideo");
 
-    if (!splash || !video || !img || !tapText) return;
+  if (!splash || !video || !img || !tapText) return;
 
-    img.style.display = "block";
-    img.style.opacity = "1";
-    video.style.display = "none";
+  img.style.display = "block";
+  img.style.opacity = "1";
+  video.style.display = "none";
+  tapText.style.display = "block";
+
+  let started = false;
+
+  const start = async (e) => {
+    if (started) return;
+    started = true;
+
+    // iOS: make sure the gesture counts
+    if (e) {
+      e.preventDefault?.();
+      e.stopPropagation?.();
+    }
+
+    tapText.textContent = "Loading…";
     tapText.style.display = "block";
 
-    let started = false;
+    // cache-bust mp4
+    video.src = "./Assets/Splash.mp4?v=" + Date.now();
+    video.currentTime = 0;
 
-    const start = async () => {
-      if (started) return;
-      started = true;
+    // ✅ iOS reliability: start muted so play() succeeds
+    video.muted = true;
+    video.volume = 1.0;
 
-      tapText.textContent = "Loading…";
-      tapText.style.display = "block";
-
-      video.src = "./Assets/Splash.mp4?v=" + Date.now();
-      video.currentTime = 0;
-      video.muted = false;
-      video.volume = 1.0;
-
-      let endedAlready = false;
-      const endSplash = () => {
-        if (endedAlready) return;
-        endedAlready = true;
-        hideSplash();
-      };
-
-      video.addEventListener("ended", endSplash, { once: true });
-
-      const failToMenu = () => endSplash();
-
-      const onPlaying = () => {
-        tapText.style.display = "none";
-        video.style.display = "block";
-        img.style.display = "none";
-
-        const ms = (Number.isFinite(video.duration) && video.duration > 0)
-          ? Math.ceil(video.duration * 1000) + 400
-          : 4500;
-
-        setTimeout(endSplash, ms);
-      };
-
-      video.addEventListener("playing", onPlaying, { once: true });
-      video.addEventListener("error", failToMenu, { once: true });
-
-      try {
-        await video.play();
-      } catch (e) {
-        try {
-          video.muted = true;
-          await video.play();
-        } catch (e2) {
-          failToMenu();
-        }
-      }
+    let endedAlready = false;
+    const endSplash = () => {
+      if (endedAlready) return;
+      endedAlready = true;
+      hideSplash();
     };
 
-    splash.addEventListener("pointerup", start);
-    splash.addEventListener("touchend", start);
-  });
-})();
+    video.addEventListener("ended", endSplash, { once: true });
+    video.addEventListener("error", endSplash, { once: true });
+
+    const onPlaying = () => {
+      tapText.style.display = "none";
+      video.style.display = "block";
+      img.style.display = "none";
+
+      // ✅ try to unmute AFTER it’s playing (works if allowed by iOS)
+      try {
+        video.muted = false;
+        video.volume = 1.0;
+      } catch (_) {}
+
+      const ms = (Number.isFinite(video.duration) && video.duration > 0)
+        ? Math.ceil(video.duration * 1000) + 400
+        : 4500;
+
+      setTimeout(endSplash, ms);
+    };
+
+    video.addEventListener("playing", onPlaying, { once: true });
+
+    try {
+      await video.play();
+    } catch (err) {
+      // if still blocked, just end splash rather than getting stuck
+      endSplash();
+    }
+  };
+
+  // ✅ Use ALL of these so iPad Safari always triggers it
+  splash.addEventListener("touchstart", start, { passive: false });
+  splash.addEventListener("pointerdown", start);
+  splash.addEventListener("click", start);
+});
