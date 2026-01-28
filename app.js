@@ -660,4 +660,6 @@ window.addEventListener("load", () => {
   splash.addEventListener("touchstart", start, { passive: false });
   splash.addEventListener("pointerdown", start);
   splash.addEventListener("click", start);
-});
+}); // <-- closes window.addEventListener("load", ...)
+
+})(); // <-- closes the (() => { ... }) IIFE  ✅ THIS IS WHAT YOU’RE MISSING
