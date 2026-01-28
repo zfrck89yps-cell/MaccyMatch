@@ -305,9 +305,13 @@ function flyTogetherAndBurst(cardA, cardB, word, onDone) {
 
   // word overlay
   const wf = document.createElement("div");
-  wf.className = "wordFlash";
-  wf.textContent = word;
-  document.body.appendChild(wf);
+wf.className = "wordFlash";
+wf.textContent = word;
+
+// FORCE the word to last exactly as long as WORD_HOLD_MS
+wf.style.animation = `popWord ${WORD_HOLD_MS}ms ease forwards`;
+
+document.body.appendChild(wf);
 
   // center point
   const cx = window.innerWidth / 2;
