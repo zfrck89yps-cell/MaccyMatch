@@ -269,13 +269,44 @@
 
     function winSequence() {
       // show welldone video (6 seconds) then go back to menu
-      showWinVideo(() => {
-        removeBackButton();
-        if (lastMenu === "memoryMenu") renderMemoryMenu();
-        else renderMatchMenu();
-      });
-    }
+      function showWinVideo(onDone) {
+  const overlay = document.createElement("div");
+  overlay.className = "winVideoOverlay";
+
+  const vid = document.createElement("video");
+  vid.src = ASSETS.welldoneVideo + "?v=" + Date.now();
+  vid.playsInline = true;
+  vid.setAttribute("webkit-playsinline", "");
+  vid.autoplay = true;
+  vid.muted = false;          // 🔥 IMPORTANT
+  vid.volume = 1.0;
+  vid.controls = false;
+
+  overlay.appendChild(vid);
+  document.body.appendChild(overlay);
+
+  let cleaned = false;
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    overlay.remove();
+    onDone && onDone();
+  };
+
+  // Try to play with sound
+  const playAttempt = vid.play();
+
+  if (playAttempt !== undefined) {
+    playAttempt.catch(() => {
+      // iOS fallback: allow muted if sound is blocked
+      vid.muted = true;
+      vid.play().catch(() => {});
+    });
   }
+
+  // Always exit after 6 seconds
+  setTimeout(cleanup, 6000);
+}
 
   function getPool(category) {
     if (category === "animals") return ASSETS.animals;
