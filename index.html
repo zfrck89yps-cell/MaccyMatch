@@ -5,7 +5,6 @@
   <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-  <!-- iOS Home Screen icon -->
   <link rel="apple-touch-icon" href="Assets/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Maccy Match">
@@ -78,7 +77,6 @@
       overflow: hidden;
     }
 
-    /* Match menu background */
     #app.matchMenu {
       background-image: url("./Assets/Menu-background.png");
       background-size: cover;
@@ -86,7 +84,6 @@
       background-repeat: no-repeat;
     }
 
-    /* Memory menu background */
     #app.memoryMenu {
       background-image: url("./Assets/Memory-menu.png");
       background-size: cover;
@@ -94,7 +91,6 @@
       background-repeat: no-repeat;
     }
 
-    /* Game background */
     #app.game {
       background-image: url("./Assets/Game-background.png");
       background-size: cover;
@@ -108,8 +104,6 @@
       inset: 0;
       display: flex;
       justify-content: center;
-
-      /* Move cards block down (adjust this) */
       padding: 32vh 42px 110px;
     }
 
@@ -153,7 +147,6 @@
     }
     .placeholder:disabled { opacity: 0.85; cursor: default; }
 
-    /* scroll hint bottom-left */
     .scrollHint {
       position: absolute;
       left: 18px;
@@ -181,18 +174,16 @@
     }
     .toggleBtn:active { transform: scale(0.98); }
 
-    /* Memory button bottom-right */
     .memoryBtn {
       right: 0;
-      bottom: -30px; /* << move further down (more negative = lower) */
+      bottom: -30px;
       width: 300px;
       height: 300px;
     }
 
-    /* Match button bottom-left */
     .matchBtn {
       left: 0;
-      bottom: -30px; /* << move further down */
+      bottom: -30px;
       width: 300px;
       height: 300px;
     }
@@ -204,7 +195,7 @@
       display: block;
     }
 
-    /* ---------- GAME LAYOUT ---------- */
+    /* ---------- GAME ---------- */
     .gameWrap {
       position: absolute;
       inset: 0;
@@ -216,7 +207,7 @@
     .gameGrid {
       width: min(1100px, 92vw);
       display: grid;
-      grid-template-columns: repeat(4, 1fr); /* 8 cards = 4x2 */
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
       align-content: start;
     }
@@ -243,7 +234,6 @@
       display: block;
     }
 
-    /* Memory flip (simple + reliable) */
     .gameCard .front { display: none; }
     .gameCard.flipped .back { display: none; }
     .gameCard.flipped .front { display: block; }
@@ -259,7 +249,6 @@
       transition: opacity 220ms ease;
     }
 
-    /* Back button on game */
     .backBtn {
       position: fixed;
       top: 16px;
@@ -294,6 +283,7 @@
       will-change: transform, opacity;
       background: #fff;
     }
+
     .wordFlash {
       position: fixed;
       left: 50%;
@@ -310,18 +300,17 @@
       border-radius: 18px;
       background: rgba(0,0,0,0.15);
       opacity: 0;
-      animation: popWord 3000ms ease-out forwards;
+      animation: popWord 2500ms ease-out forwards;
       pointer-events: none;
     }
-@keyframes popWord {
-  0%   { transform: translateX(-50%) scale(0.8); opacity: 0; }
-  10%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
-  90%  { transform: translateX(-50%) scale(1.00); opacity: 1; } /* VERY LONG HOLD */
-  100% { transform: translateX(-50%) scale(0.98); opacity: 0; }
 
+    @keyframes popWord {
+      0%   { transform: translateX(-50%) scale(0.8); opacity: 0; }
+      10%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
+      90%  { transform: translateX(-50%) scale(1.00); opacity: 1; }
+      100% { transform: translateX(-50%) scale(0.98); opacity: 0; }
     }
 
-    /* Confetti canvas */
     #confettiCanvas {
       position: fixed;
       inset: 0;
@@ -329,7 +318,6 @@
       pointer-events: none;
     }
 
-    /* Win video overlay */
     .winVideoOverlay {
       position: fixed;
       inset: 0;
@@ -348,7 +336,6 @@
 </head>
 
 <body>
-  <!-- Splash -->
   <div id="splash" role="button" aria-label="Tap to start">
     <img id="splashImg" src="./Assets/Splash.PNG?v=99" alt="Maccy Match">
     <video id="splashVideo"
@@ -359,13 +346,9 @@
     <div id="tapText">Tap to Start</div>
   </div>
 
-  <!-- App -->
   <div id="app"></div>
-
-  <!-- Confetti + stars -->
   <canvas id="confettiCanvas"></canvas>
 
-  <!-- IMPORTANT: bump this v= when testing cache -->
-  <script src="./app.js?v=101"></script>
+  <script src="./app.js?v=999"></script>
 </body>
 </html>
