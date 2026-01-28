@@ -5,6 +5,7 @@
   <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
+  <!-- iOS Home Screen icon -->
   <link rel="apple-touch-icon" href="Assets/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Maccy Match">
@@ -25,7 +26,7 @@
     #splash {
       position: fixed;
       inset: 0;
-      z-index: 9999;
+      z-index: 99999;
       background: #000;
       display: flex;
       align-items: center;
@@ -33,10 +34,6 @@
       opacity: 1;
       transition: opacity 350ms ease;
       touch-action: manipulation;
-
-      /* ✅ IMPORTANT: allows tap */
-      pointer-events: auto;
-      cursor: pointer;
     }
     #splash.hidden { opacity: 0; pointer-events: none; }
 
@@ -48,8 +45,18 @@
       object-fit: cover;
       background: #000;
     }
-    #splashImg { pointer-events: none; user-select: none; -webkit-user-drag: none; }
-    #splashVideo { display: none; }
+
+    #splashImg {
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      display: block;
+    }
+
+    #splashVideo {
+      display: none;
+      background: #000;
+    }
 
     #tapText {
       position: absolute;
@@ -63,8 +70,9 @@
       text-shadow: 0 3px 0 #C97A00, 0 10px 18px rgba(0,0,0,0.35);
       animation: pulse 1.6s ease-in-out infinite;
       user-select: none;
-      pointer-events: none;
+      pointer-events: none; /* tap goes to #splash */
     }
+
     @keyframes pulse {
       0% { transform: scale(1); opacity: .85; }
       50% { transform: scale(1.08); opacity: 1; }
@@ -75,13 +83,13 @@
     #app {
       width: 100%;
       height: 100%;
-      display: none;
+      display: block; /* keep visible behind splash to avoid black */
       position: relative;
-      background: #000;
       overflow: hidden;
+      background: #000;
     }
 
-    /* Match menu background */
+    /* Example menu background (keep/replace as you like) */
     #app.menu {
       background-image: url("./Assets/Menu-background.png");
       background-size: cover;
@@ -89,225 +97,16 @@
       background-repeat: no-repeat;
     }
 
-    /* Memory menu background */
-    #app.memoryMenu {
-      background-image: url("./Assets/Memory-menu.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-
-    /* Game background */
-    #app.game {
-      background-image: url("./Assets/Game-background.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-    }
-
-    /* ---------- MENU LAYOUT ---------- */
+    /* Simple menu placeholder */
     .menuWrap {
       position: absolute;
       inset: 0;
       display: flex;
-      justify-content: center;
-      padding: 32vh 42px 110px;
-    }
-
-    .menuGrid {
-      width: min(1100px, 92vw);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      align-content: start;
-    }
-
-    .catCardBtn {
-      border: none;
-      border-radius: 22px;
-      padding: 0;
-      background: rgba(255,255,255,0.20);
-      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-      overflow: hidden;
-      cursor: pointer;
-      aspect-ratio: 16 / 9;
-      width: 100%;
-    }
-    .catCardBtn:active { transform: scale(0.99); }
-
-    .catImg {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .placeholder {
-      display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.30);
-      border: 2px solid rgba(255,255,255,0.30);
-      color: rgba(0,0,0,0.55);
+      color: #000;
+      font-size: 42px;
       font-weight: 900;
-      font-size: 22px;
-    }
-    .placeholder:disabled { opacity: 0.85; cursor: default; }
-
-    /* scroll hint bottom-left */
-    .scrollHint {
-      position: absolute;
-      left: 18px;
-      bottom: 18px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: rgba(0,0,0,0.25);
-      color: rgba(255,255,255,0.9);
-      font-size: 22px;
-      font-weight: 800;
-      user-select: none;
-      z-index: 5;
-    }
-
-    /* ---------- SWITCH MODE BUTTON (bottom-right) ---------- */
-    .modeBtn {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-
-      /* ✅ size (adjust if you want) */
-      width: 300px;
-      height: 300px;
-
-      border: none;
-      background: transparent;
-      padding: 0;
-      margin: 0;
-      cursor: pointer;
-      z-index: 10;
-      transform-origin: bottom right;
-    }
-    .modeBtn:active { transform: scale(0.98); }
-
-    .modeBtn img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.35));
-    }
-
-    /* ---------- GAME LAYOUT ---------- */
-    .gameWrap {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      padding: 22vh 42px 120px;
-    }
-
-    .gameGrid {
-      width: min(1100px, 92vw);
-      display: grid;
-      grid-template-columns: repeat(4, 1fr); /* 8 cards */
-      gap: 16px;
-      align-content: start;
-    }
-
-    .gameCard {
-      border: none;
-      border-radius: 22px;
-      padding: 0;
-      background: rgba(255,255,255,0.12);
-      box-shadow: 0 14px 30px rgba(0,0,0,0.22);
-      overflow: hidden;
-      cursor: pointer;
-      aspect-ratio: 1 / 1;
-      width: 100%;
-      position: relative;
-      outline: none;
-      transform: translateZ(0);
-    }
-
-    .gameCard img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* Memory flip: simple visibility swap (Safari-safe) */
-    .gameCard .front { display: none; }
-    .gameCard.flipped .back { display: none; }
-    .gameCard.flipped .front { display: block; }
-
-    .gameCard.matched {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 260ms ease;
-    }
-
-    /* Back button (top-left) */
-    .backBtn {
-      position: fixed;
-      top: 18px;
-      left: 18px;
-      z-index: 20;
-      border: none;
-      border-radius: 14px;
-      padding: 12px 14px;
-      background: rgba(0,0,0,0.25);
-      color: rgba(255,255,255,0.95);
-      font-size: 20px;
-      font-weight: 900;
-      box-shadow: 0 10px 22px rgba(0,0,0,0.2);
-      cursor: pointer;
-      user-select: none;
-    }
-    .backBtn:active { transform: scale(0.98); }
-
-    /* Word overlay */
-    .wordOverlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9996;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-    }
-    .wordOverlay .word {
-      font-size: clamp(42px, 7vw, 110px);
-      font-weight: 1000;
-      color: #FFD84D;
-      text-shadow: 0 5px 0 #C97A00, 0 16px 30px rgba(0,0,0,0.35);
-      padding: 18px 30px;
-      border-radius: 26px;
-      background: rgba(0,0,0,0.15);
-    }
-
-    /* Confetti canvas */
-    #confettiCanvas {
-      position: fixed;
-      inset: 0;
-      z-index: 9995;
-      pointer-events: none;
-    }
-
-    /* Welldone video overlay */
-    .wellDoneOverlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .wellDoneOverlay video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
     }
   </style>
 </head>
@@ -315,22 +114,17 @@
 <body>
   <!-- Splash -->
   <div id="splash" role="button" aria-label="Tap to start">
-    <img id="splashImg" src="./Assets/Splash.PNG?v=99" alt="Maccy Match">
+    <img id="splashImg" src="./Assets/Splash.PNG?v=1" alt="Maccy Match">
     <video id="splashVideo"
            playsinline
            webkit-playsinline
-           preload="auto"
-           src="./Assets/Splash.mp4?v=99"></video>
+           preload="auto"></video>
     <div id="tapText">Tap to Start</div>
   </div>
 
   <!-- App -->
   <div id="app"></div>
 
-  <!-- Confetti -->
-  <canvas id="confettiCanvas"></canvas>
-
-  <!-- IMPORTANT: bump this v= number when testing -->
-  <script src="./app.js?v=99"></script>
+  <script src="./app.js?v=1"></script>
 </body>
 </html>
