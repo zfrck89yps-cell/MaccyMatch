@@ -98,17 +98,32 @@
       background-repeat: no-repeat;
     }
 
-    /* ---------- MENU LAYOUT ---------- */
+    /* ---------- MENU LAYOUT (SCROLLABLE) ---------- */
     .menuWrap {
       position: absolute;
       inset: 0;
       display: flex;
       justify-content: center;
-      padding: 32vh 42px 110px;
+      padding: 28vh 42px 110px;
     }
 
-    .menuGrid {
+    /* This is the scroll container */
+    .menuScroll {
       width: min(1100px, 92vw);
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-right: 6px;
+      scrollbar-width: none;
+    }
+    .menuScroll::-webkit-scrollbar { width: 0; height: 0; }
+
+    /* Spacer so last row isn’t hidden behind buttons */
+    .menuScrollPad { height: 120px; }
+
+    /* 3 columns = 6 visible as 2 rows (depends on screen height, but tuned for iPad) */
+    .menuGrid {
+      width: 100%;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 18px;
@@ -135,18 +150,7 @@
       display: block;
     }
 
-    .placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,0.30);
-      border: 2px solid rgba(255,255,255,0.30);
-      color: rgba(0,0,0,0.55);
-      font-weight: 900;
-      font-size: 22px;
-    }
-    .placeholder:disabled { opacity: 0.85; cursor: default; }
-
+    /* Scroll hint bottom-left */
     .scrollHint {
       position: absolute;
       left: 18px;
@@ -155,10 +159,16 @@
       border-radius: 12px;
       background: rgba(0,0,0,0.25);
       color: rgba(255,255,255,0.9);
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       user-select: none;
       z-index: 5;
+      animation: hintPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes hintPulse {
+      0% { transform: translateY(0); opacity: .85; }
+      50% { transform: translateY(-4px); opacity: 1; }
+      100% { transform: translateY(0); opacity: .85; }
     }
 
     /* ---------- MENU TOGGLE BUTTONS ---------- */
@@ -300,7 +310,7 @@
       border-radius: 18px;
       background: rgba(0,0,0,0.15);
       opacity: 0;
-      animation: popWord 2500ms ease-out forwards;
+      animation: popWord 1750ms ease-out forwards;
       pointer-events: none;
     }
 
@@ -349,6 +359,7 @@
   <div id="app"></div>
   <canvas id="confettiCanvas"></canvas>
 
-  <script src="./app.js?v=999"></script>
+  <!-- IMPORTANT: bump this v= when testing cache -->
+  <script src="./app.js?v=1000"></script>
 </body>
 </html>
