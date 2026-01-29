@@ -1,10 +1,11 @@
 /* app.js
    - Match Menu + Memory Menu (toggle buttons)
-   - 8 cards (4 pairs) every round
-   - Random 4-pair selection each round from ALL animals
+   - Menus show 6 category cards at a time (3x2) with vertical scrolling
+   - 8 cards (4 pairs) every round in both games
+   - Random 4-pair selection each round from chosen category
    - Memory uses Cardback .PNG (face down)
    - Win: plays Welldone .MP4 for ~6s then returns
-   - Match animation: fly together + confetti + stars + word flash
+   - Match animation: fly together + confetti + word flash
    - Back button on game screens -> previous menu
 */
 
@@ -23,31 +24,199 @@
       img: "./Assets/Splash.PNG?v=99",
       video: "./Assets/Splash.mp4?v=99",
     },
+    // NOTE: these filenames include spaces in YOUR repo (per screenshots)
     cardback: "./Assets/Cardback .PNG",
     welldoneVideo: "./Assets/Welldone .MP4",
+
+    // ---- Category thumbs (menu cards) ----
     categoryThumbs: {
-      animals: "./Assets/Animals.PNG",
+      animals: "./Assets/Animals/Animal-category.png",
+      body: "./Assets/Body/Body-category .png",
+      clothes: "./Assets/Clothes/Clothes-category .png",
+      colours: "./Assets/Colours/Colour-category .png",
+      everyday: "./Assets/Everyday/Everyday-category.png",
+      food: "./Assets/Food/Food-category .png",
+      numbers: "./Assets/Number/Numbers-category.jpg",
+      shapes: "./Assets/Shapes/Shapes-category .png",
+      transport: "./Assets/Transport/Transport-category .png",
     },
-    animals: [
-      { key: "bear", src: "./Assets/Bear.png" },
-      { key: "cat", src: "./Assets/Cat.png" },
-      { key: "cow", src: "./Assets/Cow.png" },
-      { key: "dog", src: "./Assets/Dog.png" },
-      { key: "duck", src: "./Assets/Duck.png" },
-      { key: "elephant", src: "./Assets/Elephant.png" },
-      { key: "frog", src: "./Assets/Frog.png" },
-      { key: "giraffe", src: "./Assets/Giraffe.png" },
-      { key: "horse", src: "./Assets/Horse.png" },
-      { key: "lion", src: "./Assets/Lion.png" },
-      { key: "monkey", src: "./Assets/Monkey.png" },
-      { key: "panda", src: "./Assets/Panda.png" },
-      { key: "pig", src: "./Assets/Pig.png" },
-      { key: "rabbit", src: "./Assets/Rabbit.png" },
-      { key: "sheep", src: "./Assets/Sheep.png" },
-      { key: "tiger", src: "./Assets/Tiger.png" },
-      { key: "zebra", src: "./Assets/Zebra.png" },
-    ],
+
+    // ---- Card pools (game images) ----
+    // Keys only matter for matching; src paths must match GitHub exactly.
+    pools: {
+      animals: [
+        { key: "bird", src: "./Assets/Animals/Bird.png" },
+        { key: "cat", src: "./Assets/Animals/Cat.png" },
+        { key: "cow", src: "./Assets/Animals/Cow.png" },
+        { key: "crab", src: "./Assets/Animals/Crab.png" },
+        { key: "dog", src: "./Assets/Animals/Dog.png" },
+        { key: "duck", src: "./Assets/Animals/Duck.png" },
+        { key: "elephant", src: "./Assets/Animals/Elephant.png" },
+        { key: "fish", src: "./Assets/Animals/Fish.png" },
+        { key: "frog", src: "./Assets/Animals/Frog.png" },
+        { key: "lion", src: "./Assets/Animals/Lion.png" },
+        { key: "monkey", src: "./Assets/Animals/Monkey.png" },
+        { key: "panda", src: "./Assets/Animals/Panda.png" },
+        { key: "pig", src: "./Assets/Animals/Pig.png" },
+        { key: "rabbit", src: "./Assets/Animals/Rabbit.png" },
+      ],
+
+      body: [
+        { key: "arm", src: "./Assets/Body/Arm.png" },
+        { key: "ear", src: "./Assets/Body/Ear.png" },
+        { key: "eyes", src: "./Assets/Body/Eyes.png" },
+        { key: "feet", src: "./Assets/Body/Feet.png" },
+        { key: "fingers", src: "./Assets/Body/Fingers.png" },
+        { key: "hand", src: "./Assets/Body/Hand.png" },
+        { key: "head", src: "./Assets/Body/Head.png" },
+        { key: "leg", src: "./Assets/Body/Leg.png" },
+        { key: "mouth", src: "./Assets/Body/Mouth.png" },
+        { key: "nose", src: "./Assets/Body/Nose.png" },
+        { key: "toes", src: "./Assets/Body/Toes.png" },
+        { key: "tummy", src: "./Assets/Body/Tummy.png" },
+      ],
+
+      clothes: [
+        { key: "coat", src: "./Assets/Clothes/Coat.png" },
+        { key: "gloves", src: "./Assets/Clothes/Gloves.png" },
+        { key: "hat", src: "./Assets/Clothes/Hat.png" },
+        { key: "jumper", src: "./Assets/Clothes/Jumper.png" },
+        { key: "pants", src: "./Assets/Clothes/Pants.png" },
+        { key: "shoes", src: "./Assets/Clothes/Shoes.png" },
+        { key: "socks", src: "./Assets/Clothes/Socks.png" },
+        { key: "tshirt", src: "./Assets/Clothes/T-shirt.png" },
+        { key: "trousers", src: "./Assets/Clothes/Trousers.png" },
+        { key: "vest", src: "./Assets/Clothes/Vest.png" },
+        { key: "wellies", src: "./Assets/Clothes/Wellies.png" },
+      ],
+
+      colours: [
+        { key: "black", src: "./Assets/Colours/Black.png" },
+        { key: "blue", src: "./Assets/Colours/Blue.png" },
+        { key: "brown", src: "./Assets/Colours/Brown.png" },
+        { key: "green", src: "./Assets/Colours/Green.png" },
+        { key: "orange", src: "./Assets/Colours/Orange.png" },
+        { key: "pink", src: "./Assets/Colours/Pink.png" },
+        { key: "purple", src: "./Assets/Colours/Purple.png" },
+        // NOTE: your screenshot shows "Red .png" (space before .png)
+        { key: "red", src: "./Assets/Colours/Red .png" },
+        { key: "white", src: "./Assets/Colours/White.png" },
+        { key: "yellow", src: "./Assets/Colours/Yellow.png" },
+      ],
+
+      everyday: [
+        { key: "beach", src: "./Assets/Everyday/Beach.png" },
+        { key: "bed", src: "./Assets/Everyday/Bed.png" },
+        { key: "bowl", src: "./Assets/Everyday/Bowl.png" },
+        { key: "bucketspade", src: "./Assets/Everyday/Bucket&spade.png" },
+        { key: "chair", src: "./Assets/Everyday/Chair.png" },
+        { key: "clock", src: "./Assets/Everyday/Clock.png" },
+        { key: "cloud", src: "./Assets/Everyday/Cloud.png" },
+        { key: "cup", src: "./Assets/Everyday/Cup.png" },
+        { key: "door", src: "./Assets/Everyday/Door.png" },
+        { key: "flower", src: "./Assets/Everyday/Flower.png" },
+        { key: "fork", src: "./Assets/Everyday/Fork.png" },
+        { key: "house", src: "./Assets/Everyday/House.png" },
+        { key: "knife", src: "./Assets/Everyday/Knife.png" },
+        { key: "moon", src: "./Assets/Everyday/Moon.png" },
+        { key: "park", src: "./Assets/Everyday/Park.png" },
+        { key: "plate", src: "./Assets/Everyday/Plate.png" },
+        { key: "rainbow", src: "./Assets/Everyday/Rainbow.png" },
+        { key: "road", src: "./Assets/Everyday/Road.png" },
+        // NOTE: screenshot shows "Spoon .png" (space before .png)
+        { key: "spoon", src: "./Assets/Everyday/Spoon .png" },
+        { key: "sun", src: "./Assets/Everyday/Sun.png" },
+        { key: "table", src: "./Assets/Everyday/Table.png" },
+        { key: "telly", src: "./Assets/Everyday/Telly.png" },
+        { key: "tree", src: "./Assets/Everyday/Tree.png" },
+        { key: "window", src: "./Assets/Everyday/Window.png" },
+      ],
+
+      food: [
+        { key: "apple", src: "./Assets/Food/Apple.png" },
+        { key: "banana", src: "./Assets/Food/Banana.png" },
+        { key: "biscuits", src: "./Assets/Food/Biscuits.png" },
+        { key: "bread", src: "./Assets/Food/Bread.png" },
+        { key: "burger", src: "./Assets/Food/Burger.png" },
+        { key: "cake", src: "./Assets/Food/Cake.png" },
+        { key: "chips", src: "./Assets/Food/Chips.png" },
+        { key: "chocolate", src: "./Assets/Food/Chocolate.png" },
+        { key: "crisp", src: "./Assets/Food/Crisp.png" },
+        { key: "grapes", src: "./Assets/Food/Grapes.png" },
+        { key: "melon", src: "./Assets/Food/Melon.png" },
+        { key: "milk", src: "./Assets/Food/Milk.png" },
+        { key: "orange", src: "./Assets/Food/Orange.png" },
+        { key: "pear", src: "./Assets/Food/Pear.png" },
+        // NOTE: screenshot shows "Pizza .png" (space before .png)
+        { key: "pizza", src: "./Assets/Food/Pizza .png" },
+        { key: "sandwich", src: "./Assets/Food/Sandwich.png" },
+        { key: "strawberry", src: "./Assets/Food/Strawberry.png" },
+        { key: "water", src: "./Assets/Food/Water.png" },
+        { key: "watermelon", src: "./Assets/Food/Watermelon.png" },
+      ],
+
+      numbers: [
+        // NOTE: folder is "Number" and files are "1.PNG" etc (uppercase extension)
+        { key: "1", src: "./Assets/Number/1.PNG" },
+        { key: "2", src: "./Assets/Number/2.PNG" },
+        { key: "3", src: "./Assets/Number/3.PNG" },
+        { key: "4", src: "./Assets/Number/4.PNG" },
+        { key: "5", src: "./Assets/Number/5.PNG" },
+        { key: "6", src: "./Assets/Number/6.PNG" },
+        { key: "7", src: "./Assets/Number/7.PNG" },
+        { key: "8", src: "./Assets/Number/8.PNG" },
+        { key: "9", src: "./Assets/Number/9.PNG" },
+        { key: "10", src: "./Assets/Number/10.PNG" },
+      ],
+
+      shapes: [
+        { key: "circle", src: "./Assets/Shapes/Circle.png" },
+        // NOTE: screenshot shows "Diamond .png" (space)
+        { key: "diamond", src: "./Assets/Shapes/Diamond .png" },
+        { key: "heart", src: "./Assets/Shapes/Heart.png" },
+        // NOTE: screenshot shows "Hexagon .png" (space)
+        { key: "hexagon", src: "./Assets/Shapes/Hexagon .png" },
+        { key: "oval", src: "./Assets/Shapes/Oval.png" },
+        // NOTE: screenshot shows "Rectangle .png" (space)
+        { key: "rectangle", src: "./Assets/Shapes/Rectangle .png" },
+        { key: "square", src: "./Assets/Shapes/Square.png" },
+        { key: "star", src: "./Assets/Shapes/Star.png" },
+        { key: "triangle", src: "./Assets/Shapes/Triangle.png" },
+      ],
+
+      transport: [
+        { key: "ambulance", src: "./Assets/Transport/Ambulance.png" },
+        { key: "bike", src: "./Assets/Transport/Bike.png" },
+        { key: "boat", src: "./Assets/Transport/Boat.png" },
+        { key: "bus", src: "./Assets/Transport/Bus.png" },
+        { key: "car", src: "./Assets/Transport/Car.png" },
+        // NOTE: screenshot shows "Fire engine.png" (space)
+        { key: "fireengine", src: "./Assets/Transport/Fire engine.png" },
+        // NOTE: screenshot shows "Heilcopter.png" (typo in filename!)
+        { key: "helicopter", src: "./Assets/Transport/Heilcopter.png" },
+        { key: "plane", src: "./Assets/Transport/Plane.png" },
+        // NOTE: screenshot shows "Policecar .png" (space)
+        { key: "policecar", src: "./Assets/Transport/Policecar .png" },
+        { key: "scooter", src: "./Assets/Transport/Scooter.png" },
+        { key: "tractor", src: "./Assets/Transport/Tractor.png" },
+        { key: "train", src: "./Assets/Transport/Train.png" },
+        { key: "truck", src: "./Assets/Transport/Truck.png" },
+        { key: "wheel", src: "./Assets/Transport/Wheel.png" },
+      ],
+    },
   };
+
+  const CATEGORIES = [
+    { id: "animals", label: "Animals" },
+    { id: "body", label: "Body" },
+    { id: "clothes", label: "Clothes" },
+    { id: "colours", label: "Colours" },
+    { id: "everyday", label: "Everyday" },
+    { id: "food", label: "Food" },
+    { id: "numbers", label: "Numbers" },
+    { id: "shapes", label: "Shapes" },
+    { id: "transport", label: "Transport" },
+  ];
 
   const app = () => document.getElementById("app");
   const canvas = () => document.getElementById("confettiCanvas");
@@ -55,74 +224,58 @@
   let lastMenu = "matchMenu";
 
   // ---------------- MENUS ----------------
-  function renderMatchMenu() {
-    lastMenu = "matchMenu";
+  function renderMenu(mode) {
+    // mode is "matchMenu" or "memoryMenu"
+    lastMenu = mode;
+
     const el = app();
     if (!el) return;
-    el.className = "matchMenu";
+
+    el.className = mode;
+
+    const cardsHtml = CATEGORIES.map(cat => {
+      const thumb = ASSETS.categoryThumbs[cat.id];
+      return `
+        <button class="catCardBtn" data-cat="${cat.id}" aria-label="${cat.label}">
+          <img class="catImg" src="${thumb}" alt="${cat.label}">
+        </button>
+      `;
+    }).join("");
 
     el.innerHTML = `
       <div class="menuWrap">
-        <div class="menuGrid" aria-label="Categories">
-          <button class="catCardBtn" id="catAnimals" aria-label="Animals">
-            <img class="catImg" src="${ASSETS.categoryThumbs.animals}" alt="Animals">
-          </button>
-
-          <button class="catCardBtn placeholder" disabled>Vehicles</button>
-          <button class="catCardBtn placeholder" disabled>Food</button>
-          <button class="catCardBtn placeholder" disabled>Numbers</button>
-          <button class="catCardBtn placeholder" disabled>Colours</button>
-          <button class="catCardBtn placeholder" disabled>Shapes</button>
+        <div class="menuScroll" id="menuScroll">
+          <div class="menuGrid" aria-label="Categories">
+            ${cardsHtml}
+          </div>
+          <div class="menuScrollPad"></div>
         </div>
       </div>
 
-      <div class="scrollHint">‹ ›</div>
+      <div class="scrollHint" aria-hidden="true">Scroll ↓</div>
 
-      <button class="toggleBtn memoryBtn" id="toMemory" aria-label="Go to Memory">
-        <img src="${ASSETS.buttons.memory}" alt="Maccy Memory">
-      </button>
+      ${
+        mode === "matchMenu"
+          ? `<button class="toggleBtn memoryBtn" id="toMemory" aria-label="Go to Memory">
+               <img src="${ASSETS.buttons.memory}" alt="Maccy Memory">
+             </button>`
+          : `<button class="toggleBtn matchBtn" id="toMatch" aria-label="Go to Match">
+               <img src="${ASSETS.buttons.match}" alt="Maccy Match">
+             </button>`
+      }
     `;
 
-    document.getElementById("catAnimals")?.addEventListener("click", () => {
-      startGame({ mode: "match", category: "animals" });
+    // click category -> start game with chosen mode
+    el.querySelectorAll(".catCardBtn[data-cat]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const category = btn.getAttribute("data-cat");
+        const gameMode = (mode === "matchMenu") ? "match" : "memory";
+        startGame({ mode: gameMode, category });
+      });
     });
 
-    document.getElementById("toMemory")?.addEventListener("click", renderMemoryMenu);
-  }
-
-  function renderMemoryMenu() {
-    lastMenu = "memoryMenu";
-    const el = app();
-    if (!el) return;
-    el.className = "memoryMenu";
-
-    el.innerHTML = `
-      <div class="menuWrap">
-        <div class="menuGrid" aria-label="Categories">
-          <button class="catCardBtn" id="catAnimals" aria-label="Animals">
-            <img class="catImg" src="${ASSETS.categoryThumbs.animals}" alt="Animals">
-          </button>
-
-          <button class="catCardBtn placeholder" disabled>Vehicles</button>
-          <button class="catCardBtn placeholder" disabled>Food</button>
-          <button class="catCardBtn placeholder" disabled>Numbers</button>
-          <button class="catCardBtn placeholder" disabled>Colours</button>
-          <button class="catCardBtn placeholder" disabled>Shapes</button>
-        </div>
-      </div>
-
-      <div class="scrollHint">‹ ›</div>
-
-      <button class="toggleBtn matchBtn" id="toMatch" aria-label="Go to Match">
-        <img src="${ASSETS.buttons.match}" alt="Maccy Match">
-      </button>
-    `;
-
-    document.getElementById("catAnimals")?.addEventListener("click", () => {
-      startGame({ mode: "memory", category: "animals" });
-    });
-
-    document.getElementById("toMatch")?.addEventListener("click", renderMatchMenu);
+    document.getElementById("toMemory")?.addEventListener("click", () => renderMenu("memoryMenu"));
+    document.getElementById("toMatch")?.addEventListener("click", () => renderMenu("matchMenu"));
   }
 
   function renderBackButton() {
@@ -131,8 +284,8 @@
     btn.className = "backBtn";
     btn.textContent = "← Back";
     btn.addEventListener("click", () => {
-      if (lastMenu === "memoryMenu") renderMemoryMenu();
-      else renderMatchMenu();
+      if (lastMenu === "memoryMenu") renderMenu("memoryMenu");
+      else renderMenu("matchMenu");
     });
     document.body.appendChild(btn);
   }
@@ -145,12 +298,25 @@
   function startGame({ mode, category }) {
     const el = app();
     if (!el) return;
+
     el.className = "game";
     el.innerHTML = "";
 
     renderBackButton();
 
     const pool = getPool(category);
+
+    // Safety: if a pool is missing or too small, don’t crash.
+    if (!pool || pool.length < 4) {
+      el.innerHTML = `
+        <div style="padding:24px;color:#fff;font-weight:800;">
+          Missing/too-small category pool: <b>${category}</b><br>
+          Add at least 4 images to ASSETS.pools["${category}"].
+        </div>
+      `;
+      return;
+    }
+
     const picks = sampleUnique(pool, 4); // 4 pairs = 8 cards
     const cards = shuffle([...picks, ...picks].map((c, i) => ({ ...c, id: `${c.key}_${i}` })));
 
@@ -252,21 +418,20 @@
     function winSequence() {
       showWinVideo(() => {
         removeBackButton();
-        if (lastMenu === "memoryMenu") renderMemoryMenu();
-        else renderMatchMenu();
+        if (lastMenu === "memoryMenu") renderMenu("memoryMenu");
+        else renderMenu("matchMenu");
       });
     }
   }
 
   function getPool(category) {
-    if (category === "animals") return ASSETS.animals;
-    return ASSETS.animals;
+    return ASSETS.pools[category] || null;
   }
 
   // ---------------- MATCH ANIMATION ----------------
   function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-    const HOLD_MS = 2000;
-    const FADE_MS = 500;
+    const HOLD_MS = 1400;
+    const FADE_MS = 350;
 
     const layer = document.createElement("div");
     layer.className = "smashLayer";
@@ -298,7 +463,7 @@
       y: cy - (rB.top + rB.height / 2),
     };
 
-    const flyOpts = { duration: 320, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" };
+    const flyOpts = { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" };
 
     cloneA.animate(
       [{ transform: "translate(0px,0px) scale(1)" },
@@ -312,7 +477,7 @@
       flyOpts
     );
 
-    setTimeout(() => burstConfettiAndStars(850), 360);
+    setTimeout(() => burstConfettiAndStars(700), 280);
 
     setTimeout(() => {
       cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
@@ -353,7 +518,7 @@
   // ---------------- CONFETTI + STARS ----------------
   let raf = null;
 
-  function burstConfettiAndStars(durationMs = 2500) {
+  function burstConfettiAndStars(durationMs = 1800) {
     const c = canvas();
     if (!c) return;
     const ctx = c.getContext("2d");
@@ -372,7 +537,7 @@
     const colors = ["#FFD84D", "#35D05A", "#4DA3FF", "#FF4D4D", "#FF7AD9", "#FFFFFF"];
 
     const particles = [];
-    const count = 160;
+    const count = 150;
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
 
@@ -467,7 +632,7 @@
     vid.src = ASSETS.welldoneVideo + "?v=" + Date.now();
     vid.playsInline = true;
     vid.setAttribute("webkit-playsinline", "");
-    vid.muted = true; // autoplay safe on iOS
+    vid.muted = true;
     vid.autoplay = true;
 
     overlay.appendChild(vid);
@@ -511,7 +676,7 @@
 
   // ---------------- STARTUP (splash flow) ----------------
   window.addEventListener("load", () => {
-    renderMatchMenu();
+    renderMenu("matchMenu");
     showApp();
 
     const splash = document.getElementById("splash");
@@ -540,8 +705,7 @@
       video.src = "./Assets/Splash.mp4?v=" + Date.now();
       video.currentTime = 0;
 
-      // iOS: must begin muted for reliability
-      video.muted = true;
+      video.muted = true; // iOS reliable start
       video.volume = 1.0;
 
       let endedAlready = false;
@@ -559,14 +723,11 @@
         video.style.display = "block";
         img.style.display = "none";
 
-        // try to unmute after play starts (may still be blocked by iOS)
-        try {
-          video.muted = false;
-          video.volume = 1.0;
-        } catch (_) {}
+        // try unmute after start (may still be blocked)
+        try { video.muted = false; video.volume = 1.0; } catch (_) {}
 
         const ms = (Number.isFinite(video.duration) && video.duration > 0)
-          ? Math.ceil(video.duration * 1000) + 400
+          ? Math.ceil(video.duration * 1000) + 250
           : 4500;
 
         setTimeout(endSplash, ms);
