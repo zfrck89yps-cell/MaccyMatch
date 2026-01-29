@@ -36,7 +36,7 @@
       colours: "./Assets/Colours/Colour-category .png",
       everyday: "./Assets/Everyday/Everyday-category.png",
       food: "./Assets/Food/Food-category .png",
-      numbers: "./Assets/Number/Numbers-category.jpg",
+      numbers: "./Assets/Numbers/Numbers-category.png",
       shapes: "./Assets/Shapes/Shapes-category .png",
       transport: "./Assets/Transport/Transport-category .png",
     },
@@ -157,16 +157,16 @@
 
       numbers: [
         // NOTE: folder is "Number" and files are "1.PNG" etc (uppercase extension)
-        { key: "1", src: "./Assets/Number/1.PNG" },
-        { key: "2", src: "./Assets/Number/2.PNG" },
-        { key: "3", src: "./Assets/Number/3.PNG" },
-        { key: "4", src: "./Assets/Number/4.PNG" },
-        { key: "5", src: "./Assets/Number/5.PNG" },
-        { key: "6", src: "./Assets/Number/6.PNG" },
-        { key: "7", src: "./Assets/Number/7.PNG" },
-        { key: "8", src: "./Assets/Number/8.PNG" },
-        { key: "9", src: "./Assets/Number/9.PNG" },
-        { key: "10", src: "./Assets/Number/10.PNG" },
+        { key: "1", src: "./Assets/Numbers/1.PNG" },
+        { key: "2", src: "./Assets/Numbers/2.PNG" },
+        { key: "3", src: "./Assets/Numbers/3.PNG" },
+        { key: "4", src: "./Assets/Numbers/4.PNG" },
+        { key: "5", src: "./Assets/Numbers/5.PNG" },
+        { key: "6", src: "./Assets/Numbers/6.PNG" },
+        { key: "7", src: "./Assets/Numbers/7.PNG" },
+        { key: "8", src: "./Assets/Numbers/8.PNG" },
+        { key: "9", src: "./Assets/Numbers/9.PNG" },
+        { key: "10", src: "./Assets/Numbers/10.PNG" },
       ],
 
       shapes: [
@@ -252,7 +252,6 @@
         </div>
       </div>
 
-      <div class="scrollHint" aria-hidden="true">Scroll ↓</div>
 
       ${
         mode === "matchMenu"
