@@ -280,87 +280,91 @@
     }
     .backBtn:active { transform: scale(0.98); }
 
-    /* ---------- MATCH ANIMATION OVERLAY ---------- */
-    /* Match animation overlay */
+   /* ---------- MATCH ANIMATION OVERLAY (FULL BLOCK) ---------- */
+
+/* Overlay container that holds haze + flying clones */
 .smashLayer{
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: 10000;          /* above confetti, below word */
   pointer-events: none;
 }
 
+/* The “white haze” behind the clones */
 .smashDim{
   position: absolute;
   inset: 0;
-
-  /* WHITE HAZE */
-  background: rgba(255,255,255,0.60);   /* try 0.18–0.35 */
-
+  background: rgba(255,255,255,0.20); /* tweak: 0.12–0.28 */
   opacity: 0;
   transition: opacity 180ms ease;
+  z-index: 1;
 }
 
-/* The flying clones */
-.smashClone {
+/* The flying cloned cards */
+.smashClone{
   position: absolute;
   border-radius: 22px;
   overflow: hidden;
+  background: #fff;
   box-shadow: 0 18px 40px rgba(0,0,0,0.35);
   will-change: transform, opacity;
-  background: #fff;
+  z-index: 2;
 }
 
-    .wordFlash{
-      position: fixed;
-      left: 50%;
-      top: 12%;
-      transform: translateX(-50%);
-      z-index: 10050;
+/* The big word popup */
+.wordFlash{
+  position: fixed;
+  left: 50%;
+  top: 12%;
+  transform: translateX(-50%);
+  z-index: 10050; /* always top */
 
-      font-family: "Baloo 2", system-ui, sans-serif;
-      font-size: clamp(64px, 9vw, 160px);
-      font-weight: 900;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+  font-family: "Baloo 2", system-ui, sans-serif;
+  font-size: clamp(64px, 9vw, 160px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 
-      color: #FFD23A;
+  color: #FFD23A;
 
-      text-shadow:
-        -4px  0   0 #5A2F00,
-         4px  0   0 #5A2F00,
-         0   -4px 0 #5A2F00,
-         0    4px 0 #5A2F00,
-        -3px -3px 0 #5A2F00,
-         3px -3px 0 #5A2F00,
-        -3px  3px 0 #5A2F00,
-         3px  3px 0 #5A2F00,
-         0   10px 22px rgba(0,0,0,0.45),
-         0    0   18px rgba(255,210,60,0.85),
-         0    0   36px rgba(255,170,0,0.55);
+  /* stable outline + depth + glow */
+  text-shadow:
+    -4px  0   0 #5A2F00,
+     4px  0   0 #5A2F00,
+     0   -4px 0 #5A2F00,
+     0    4px 0 #5A2F00,
+    -3px -3px 0 #5A2F00,
+     3px -3px 0 #5A2F00,
+    -3px  3px 0 #5A2F00,
+     3px  3px 0 #5A2F00,
+     0   10px 22px rgba(0,0,0,0.45),
+     0    0   18px rgba(255,210,60,0.85),
+     0    0   36px rgba(255,170,0,0.55);
 
-      opacity: 0;
-      pointer-events: none;
-      will-change: transform, opacity;
-    }
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
 
-    @keyframes popWord{
-      0%   { transform: translateX(-50%) scale(0.92); opacity: 0; }
-      12%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
-      88%  { transform: translateX(-50%) scale(1.00); opacity: 1; }
-      100% { transform: translateX(-50%) scale(0.99); opacity: 0; }
-    }
+/* Animation used by JS: wf.style.animation = `popWord ...` */
+@keyframes popWord{
+  0%   { transform: translateX(-50%) scale(0.92); opacity: 0; }
+  12%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
+  88%  { transform: translateX(-50%) scale(1.00); opacity: 1; }
+  100% { transform: translateX(-50%) scale(0.99); opacity: 0; }
+}
 
     #confettiCanvas {
       position: fixed;
       inset: 0;
-      z-index: 10001;
+      z-index: 9999;
       pointer-events: none;
     }
 
     .winVideoOverlay {
       position: fixed;
       inset: 0;
-      z-index: 10000;
+      z-index: 9997;
       background: #000;
       display: flex;
       align-items: center;

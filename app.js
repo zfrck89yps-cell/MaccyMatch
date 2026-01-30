@@ -534,113 +534,147 @@ const CONFETTI_MS = 3000; // <-- 3 seconds
 }
 
   // ---------------- CONFETTI + STARS ----------------
-  let raf = null;
+let raf = null;
 
-  function burstConfettiAndStars(durationMs = 3000) {
-    const c = canvas();
-    if (!c) return;
+function burstConfettiAndStars(durationMs = 3000) {
+  const c = document.getElementById("confettiCanvas");
+  if (!c) return;
 
-    const ctx = c.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
+  const ctx = c.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
 
-    function resize() {
-      c.width = Math.floor(window.innerWidth * dpr);
-      c.height = Math.floor(window.innerHeight * dpr);
-      c.style.width = window.innerWidth + "px";
-      c.style.height = window.innerHeight + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    resize();
-
-    const start = performance.now();
-    const colors = ["#FFD84D", "#35D05A", "#4DA3FF", "#FF4D4D", "#FF7AD9", "#FFFFFF"];
-
-    const particles = [];
-    const count = 160;
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-
-    for (let i = 0; i < count; i++) {
-      const isStar = Math.random() < 0.35;
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 6;
-
-      particles.push({
-        x: centerX + (Math.random() - 0.5) * 20,
-        y: centerY + (Math.random() - 0.5) * 20,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - (1 + Math.random() * 2),
-        rot: Math.random() * Math.PI * 2,
-        vrot: (Math.random() - 0.5) * 0.3,
-        size: isStar ? (6 + Math.random() * 10) : (4 + Math.random() * 6),
-        isStar,
-        color: colors[(Math.random() * colors.length) | 0],
-      });
-    }
-
-    function drawStar(x, y, r, rot) {
-      const spikes = 5;
-      const outerRadius = r;
-      const innerRadius = r * 0.45;
-
-      ctx.beginPath();
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(rot);
-
-      let rotA = Math.PI / 2 * 3;
-      let step = Math.PI / spikes;
-
-      ctx.moveTo(0, -outerRadius);
-      for (let i = 0; i < spikes; i++) {
-        ctx.lineTo(Math.cos(rotA) * outerRadius, Math.sin(rotA) * outerRadius);
-        rotA += step;
-        ctx.lineTo(Math.cos(rotA) * innerRadius, Math.sin(rotA) * innerRadius);
-        rotA += step;
-      }
-      ctx.lineTo(0, -outerRadius);
-      ctx.closePath();
-
-      ctx.restore();
-      ctx.fill();
-    }
-
-    function frame(t) {
-      const elapsed = t - start;
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.10;
-        p.rot += p.vrot;
-
-        const fade = Math.max(0, 1 - elapsed / durationMs);
-        ctx.globalAlpha = fade;
-        ctx.fillStyle = p.color;
-
-        if (p.isStar) drawStar(p.x, p.y, p.size * 0.5, p.rot);
-        else {
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rot);
-          ctx.fillRect(-p.size, -p.size / 2, p.size * 2, p.size);
-          ctx.restore();
-        }
-      }
-
-      ctx.globalAlpha = 1;
-
-      if (elapsed < durationMs) raf = requestAnimationFrame(frame);
-      else {
-        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        raf = null;
-      }
-    }
-
-    if (raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(frame);
+  function resize() {
+    c.width = Math.floor(window.innerWidth * dpr);
+    c.height = Math.floor(window.innerHeight * dpr);
+    c.style.width = window.innerWidth + "px";
+    c.style.height = window.innerHeight + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
+  resize();
+
+  const start = performance.now();
+
+  // ✅ Bright, non-pastel, valid colors (no weird symbols)
+  const colors = [
+    "#FFCC00", // bright gold
+    "#00D14A", // vivid green
+    "#007BFF", // strong blue
+    "#FF2D2D", // punchy red
+    "#FF2BC2", // hot pink
+    "#FFFFFF"  // white pop
+  ];
+
+  const particles = [];
+  const count = 240;
+
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  for (let i = 0; i < count; i++) {
+    const isStar = Math.random() < 0.35;
+    const angle = Math.random() * Math.PI * 2;
+
+    // bigger + bolder movement
+    const speed = 3 + Math.random() * 8;
+
+    particles.push({
+      x: centerX + (Math.random() - 0.5) * 30,
+      y: centerY + (Math.random() - 0.5) * 30,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - (2 + Math.random() * 3),
+      rot: Math.random() * Math.PI * 2,
+      vrot: (Math.random() - 0.5) * 0.35,
+
+      // ✅ bigger pieces
+      size: isStar ? (10 + Math.random() * 18) : (8 + Math.random() * 14),
+
+      isStar,
+      color: colors[(Math.random() * colors.length) | 0],
+    });
+  }
+
+  function drawStar(x, y, r, rot) {
+    const spikes = 5;
+    const outerRadius = r;
+    const innerRadius = r * 0.45;
+
+    ctx.beginPath();
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+
+    let rotA = Math.PI / 2 * 3;
+    const step = Math.PI / spikes;
+
+    ctx.moveTo(0, -outerRadius);
+    for (let i = 0; i < spikes; i++) {
+      ctx.lineTo(Math.cos(rotA) * outerRadius, Math.sin(rotA) * outerRadius);
+      rotA += step;
+      ctx.lineTo(Math.cos(rotA) * innerRadius, Math.sin(rotA) * innerRadius);
+      rotA += step;
+    }
+    ctx.closePath();
+
+    ctx.restore();
+    ctx.fill();
+  }
+
+  function frame(t) {
+    const elapsed = t - start;
+
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+    // ✅ slower fade (holds brightness longer, then fades)
+    const progress = Math.min(1, elapsed / durationMs);
+
+// Hold at full brightness for 70% of the time, then fade in the last 30%
+const hold = 0.70;
+
+let fade = 1;
+if (progress > hold) {
+  const p = (progress - hold) / (1 - hold); // 0 → 1
+  fade = 1 - (p * p); // smooth fade
+}
+
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.12; // gravity
+      p.rot += p.vrot;
+
+      ctx.globalAlpha = Math.max(0, fade);
+
+      // ✅ THIS is the line you were missing
+      ctx.fillStyle = p.color;
+
+      if (p.isStar) {
+        drawStar(p.x, p.y, p.size * 0.5, p.rot);
+      } else {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        // bigger rectangles
+        ctx.fillRect(-p.size, -p.size / 2, p.size * 2, p.size);
+        ctx.restore();
+      }
+    }
+
+    ctx.globalAlpha = 1;
+
+    if (elapsed < durationMs) {
+      raf = requestAnimationFrame(frame);
+    } else {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      raf = null;
+    }
+  }
+
+  if (raf) cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(frame);
+
+  // Optional: keep it responsive if they rotate iPad mid-confetti
+  window.addEventListener("resize", resize, { once: true });
+}
 
   // ---------------- WIN VIDEO ----------------
   function showWinVideo(onDone) {
