@@ -1,3 +1,4 @@
+
 /* app.js
    - Match Menu + Memory Menu (toggle buttons)
    - Menus show 6 category cards at a time (3x2) with vertical scrolling
@@ -5,8 +6,8 @@
    - Random 4-pair selection each round from chosen category
    - Memory uses Cardback .PNG (face down)
    - Win: plays Welldone .MP4 for ~6s then returns
-   - Match animation: fly together + confetti + word flash
-   - Back button on game screens -> previous menu
+   - Match animation: fly together + dim + confetti (3s) + word flash
+   - Back button ONLY on game screens -> previous menu
 */
 
 (() => {
@@ -24,11 +25,9 @@
       img: "./Assets/Splash.PNG?v=99",
       video: "./Assets/Splash.mp4?v=99",
     },
-    // NOTE: these filenames include spaces in YOUR repo (per screenshots)
     cardback: "./Assets/Cardback .PNG",
     welldoneVideo: "./Assets/Welldone .MP4",
 
-    // ---- Category thumbs (menu cards) ----
     categoryThumbs: {
       animals: "./Assets/Animals/Animal-category.png",
       body: "./Assets/Body/Body-category .png",
@@ -41,8 +40,6 @@
       transport: "./Assets/Transport/Transport-category .png",
     },
 
-    // ---- Card pools (game images) ----
-    // Keys only matter for matching; src paths must match GitHub exactly.
     pools: {
       animals: [
         { key: "bird", src: "./Assets/Animals/Bird.png" },
@@ -98,7 +95,6 @@
         { key: "orange", src: "./Assets/Colours/Orange.png" },
         { key: "pink", src: "./Assets/Colours/Pink.png" },
         { key: "purple", src: "./Assets/Colours/Purple.png" },
-        // NOTE: your screenshot shows "Red .png" (space before .png)
         { key: "red", src: "./Assets/Colours/Red .png" },
         { key: "white", src: "./Assets/Colours/White.png" },
         { key: "yellow", src: "./Assets/Colours/Yellow.png" },
@@ -123,7 +119,6 @@
         { key: "plate", src: "./Assets/Everyday/Plate.png" },
         { key: "rainbow", src: "./Assets/Everyday/Rainbow.png" },
         { key: "road", src: "./Assets/Everyday/Road.png" },
-        // NOTE: screenshot shows "Spoon .png" (space before .png)
         { key: "spoon", src: "./Assets/Everyday/Spoon .png" },
         { key: "sun", src: "./Assets/Everyday/Sun.png" },
         { key: "table", src: "./Assets/Everyday/Table.png" },
@@ -147,7 +142,6 @@
         { key: "milk", src: "./Assets/Food/Milk.png" },
         { key: "orange", src: "./Assets/Food/Orange.png" },
         { key: "pear", src: "./Assets/Food/Pear.png" },
-        // NOTE: screenshot shows "Pizza .png" (space before .png)
         { key: "pizza", src: "./Assets/Food/Pizza .png" },
         { key: "sandwich", src: "./Assets/Food/Sandwich.png" },
         { key: "strawberry", src: "./Assets/Food/Strawberry.png" },
@@ -156,7 +150,6 @@
       ],
 
       numbers: [
-        // NOTE: folder is "Number" and files are "1.PNG" etc (uppercase extension)
         { key: "1", src: "./Assets/Numbers/1.PNG" },
         { key: "2", src: "./Assets/Numbers/2.PNG" },
         { key: "3", src: "./Assets/Numbers/3.PNG" },
@@ -171,13 +164,10 @@
 
       shapes: [
         { key: "circle", src: "./Assets/Shapes/Circle.png" },
-        // NOTE: screenshot shows "Diamond .png" (space)
         { key: "diamond", src: "./Assets/Shapes/Diamond .png" },
         { key: "heart", src: "./Assets/Shapes/Heart.png" },
-        // NOTE: screenshot shows "Hexagon .png" (space)
         { key: "hexagon", src: "./Assets/Shapes/Hexagon .png" },
         { key: "oval", src: "./Assets/Shapes/Oval.png" },
-        // NOTE: screenshot shows "Rectangle .png" (space)
         { key: "rectangle", src: "./Assets/Shapes/Rectangle .png" },
         { key: "square", src: "./Assets/Shapes/Square.png" },
         { key: "star", src: "./Assets/Shapes/Star.png" },
@@ -190,12 +180,9 @@
         { key: "boat", src: "./Assets/Transport/Boat.png" },
         { key: "bus", src: "./Assets/Transport/Bus.png" },
         { key: "car", src: "./Assets/Transport/Car.png" },
-        // NOTE: screenshot shows "Fire engine.png" (space)
         { key: "fireengine", src: "./Assets/Transport/Fire engine.png" },
-        // NOTE: screenshot shows "Heilcopter.png" (typo in filename!)
         { key: "helicopter", src: "./Assets/Transport/Heilcopter.png" },
         { key: "plane", src: "./Assets/Transport/Plane.png" },
-        // NOTE: screenshot shows "Policecar .png" (space)
         { key: "policecar", src: "./Assets/Transport/Policecar .png" },
         { key: "scooter", src: "./Assets/Transport/Scooter.png" },
         { key: "tractor", src: "./Assets/Transport/Tractor.png" },
@@ -225,8 +212,10 @@
 
   // ---------------- MENUS ----------------
   function renderMenu(mode) {
-    // mode is "matchMenu" or "memoryMenu"
     lastMenu = mode;
+
+    // IMPORTANT: remove back button when on menus
+    removeBackButton();
 
     const el = app();
     if (!el) return;
@@ -251,7 +240,6 @@
           <div class="menuScrollPad"></div>
         </div>
       </div>
-
 
       ${
         mode === "matchMenu"
@@ -304,8 +292,6 @@
     renderBackButton();
 
     const pool = getPool(category);
-
-    // Safety: if a pool is missing or too small, don’t crash.
     if (!pool || pool.length < 4) {
       el.innerHTML = `
         <div style="padding:24px;color:#fff;font-weight:800;">
@@ -316,19 +302,15 @@
       return;
     }
 
-    const picks = sampleUnique(pool, 4); // 4 pairs = 8 cards
+    const picks = sampleUnique(pool, 4);
     const cards = shuffle([...picks, ...picks].map((c, i) => ({ ...c, id: `${c.key}_${i}` })));
 
     const htmlCards = cards.map(c => {
       if (mode === "memory") {
         return `
           <button class="gameCard" data-key="${c.key}" data-word="${c.key}" data-id="${c.id}" aria-label="${c.key}">
-            <div class="back">
-              <img src="${ASSETS.cardback}" alt="Card back">
-            </div>
-            <div class="front">
-              <img src="${c.src}" alt="${c.key}">
-            </div>
+            <div class="back"><img src="${ASSETS.cardback}" alt="Card back"></div>
+            <div class="front"><img src="${c.src}" alt="${c.key}"></div>
           </button>
         `;
       }
@@ -366,9 +348,11 @@
         if (btn.classList.contains("matched")) return;
         if (btn === first) return;
 
+        // selection style
         if (mode === "memory") btn.classList.add("flipped");
-        else btn.classList.add("selected");
+        btn.classList.add("selected");
 
+        // clear previous "selected" if first pick exists and you tap another first? (we don't)
         if (!first) {
           first = btn;
           return;
@@ -381,11 +365,12 @@
         const k2 = second.dataset.key;
 
         if (k1 === k2) {
-          const word = (first.dataset.word || k1).toUpperCase();
+          const word = String(first.dataset.word || k1).toUpperCase();
 
           flyTogetherAndBurst(first, second, word, () => {
             first.classList.add("matched");
             second.classList.add("matched");
+
             first.classList.remove("selected");
             second.classList.remove("selected");
 
@@ -402,10 +387,10 @@
             if (mode === "memory") {
               first.classList.remove("flipped");
               second.classList.remove("flipped");
-            } else {
-              first.classList.remove("selected");
-              second.classList.remove("selected");
             }
+            first.classList.remove("selected");
+            second.classList.remove("selected");
+
             first = null;
             second = null;
             locked = false;
@@ -417,8 +402,7 @@
     function winSequence() {
       showWinVideo(() => {
         removeBackButton();
-        if (lastMenu === "memoryMenu") renderMenu("memoryMenu");
-        else renderMenu("matchMenu");
+        renderMenu(lastMenu); // return to where you came from
       });
     }
   }
@@ -427,69 +411,7 @@
     return ASSETS.pools[category] || null;
   }
 
-  // ---------------- MATCH ANIMATION ----------------
-  function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-    const HOLD_MS = 1400;
-    const FADE_MS = 350;
-
-    const layer = document.createElement("div");
-    layer.className = "smashLayer";
-    document.body.appendChild(layer);
-
-    const rA = cardA.getBoundingClientRect();
-    const rB = cardB.getBoundingClientRect();
-
-    const cloneA = makeClone(cardA, rA);
-    const cloneB = makeClone(cardB, rB);
-    layer.appendChild(cloneA);
-    layer.appendChild(cloneB);
-
-    const wf = document.createElement("div");
-    wf.className = "wordFlash";
-    wf.textContent = word;
-    wf.style.animationDuration = `${HOLD_MS + FADE_MS}ms`;
-    document.body.appendChild(wf);
-
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-
-    const toCenterA = {
-      x: cx - (rA.left + rA.width / 2),
-      y: cy - (rA.top + rA.height / 2),
-    };
-    const toCenterB = {
-      x: cx - (rB.left + rB.width / 2),
-      y: cy - (rB.top + rB.height / 2),
-    };
-
-    const flyOpts = { duration: 260, easing: "cubic-bezier(.2,.9,.2,1)", fill: "forwards" };
-
-    cloneA.animate(
-      [{ transform: "translate(0px,0px) scale(1)" },
-       { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)` }],
-      flyOpts
-    );
-
-    cloneB.animate(
-      [{ transform: "translate(0px,0px) scale(1)" },
-       { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)` }],
-      flyOpts
-    );
-
-    setTimeout(() => burstConfettiAndStars(700), 280);
-
-    setTimeout(() => {
-      cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
-      cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
-    }, HOLD_MS);
-
-    setTimeout(() => {
-      wf.remove();
-      layer.remove();
-      onDone && onDone();
-    }, HOLD_MS + FADE_MS);
-  }
-
+  // ---------------- MATCH ANIMATION HELPERS ----------------
   function makeClone(cardBtn, rect) {
     const clone = document.createElement("div");
     clone.className = "smashClone";
@@ -498,10 +420,7 @@
     clone.style.width = rect.width + "px";
     clone.style.height = rect.height + "px";
 
-    const img =
-      cardBtn.querySelector(".front img") ||
-      cardBtn.querySelector("img");
-
+    const img = cardBtn.querySelector(".front img") || cardBtn.querySelector("img");
     const imgClone = document.createElement("img");
     imgClone.src = img?.src || "";
     imgClone.alt = img?.alt || "";
@@ -514,12 +433,103 @@
     return clone;
   }
 
+  function flyTogetherAndBurst(cardA, cardB, word, onDone) {
+    const HOLD_MS = 3000;   // 3 seconds on screen
+    const FADE_MS = 450;
+
+    let layer, dim, wf, cloneA, cloneB;
+
+    const safeDone = () => {
+      try { wf?.remove(); } catch (_) {}
+      try { layer?.remove(); } catch (_) {}
+      onDone && onDone();
+    };
+
+    try {
+      layer = document.createElement("div");
+      layer.className = "smashLayer";
+      document.body.appendChild(layer);
+
+      dim = document.createElement("div");
+      dim.className = "smashDim";
+      layer.appendChild(dim);
+
+      requestAnimationFrame(() => { dim.style.opacity = "1"; });
+
+      const rA = cardA.getBoundingClientRect();
+      const rB = cardB.getBoundingClientRect();
+
+      cloneA = makeClone(cardA, rA);
+      cloneB = makeClone(cardB, rB);
+      layer.appendChild(cloneA);
+      layer.appendChild(cloneB);
+
+      wf = document.createElement("div");
+      wf.className = "wordFlash";
+      wf.textContent = word;
+      wf.style.animation = `popWord ${HOLD_MS + FADE_MS}ms ease-out forwards`;
+      document.body.appendChild(wf);
+
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+
+      const toCenterA = {
+        x: cx - (rA.left + rA.width / 2),
+        y: cy - (rA.top + rA.height / 2),
+      };
+      const toCenterB = {
+        x: cx - (rB.left + rB.width / 2),
+        y: cy - (rB.top + rB.height / 2),
+      };
+
+      const flyOpts = {
+        duration: 340,
+        easing: "cubic-bezier(.2,.9,.2,1)",
+        fill: "forwards",
+      };
+
+      cloneA.animate(
+        [
+          { transform: "translate(0px,0px) scale(1)", opacity: 1 },
+          { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)`, opacity: 1 },
+        ],
+        flyOpts
+      );
+
+      cloneB.animate(
+        [
+          { transform: "translate(0px,0px) scale(1)", opacity: 1 },
+          { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)`, opacity: 1 },
+        ],
+        flyOpts
+      );
+
+      // Confetti runs for the full HOLD_MS
+      setTimeout(() => burstConfettiAndStars(HOLD_MS), 220);
+
+      // Fade out clones + dim
+      setTimeout(() => {
+        cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
+        cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
+        dim.style.transition = `opacity ${FADE_MS}ms ease`;
+        dim.style.opacity = "0";
+      }, HOLD_MS);
+
+      setTimeout(safeDone, HOLD_MS + FADE_MS);
+
+    } catch (err) {
+      console.error("flyTogetherAndBurst error:", err);
+      safeDone();
+    }
+  }
+
   // ---------------- CONFETTI + STARS ----------------
   let raf = null;
 
-  function burstConfettiAndStars(durationMs = 1800) {
+  function burstConfettiAndStars(durationMs = 3000) {
     const c = canvas();
     if (!c) return;
+
     const ctx = c.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
 
@@ -536,7 +546,7 @@
     const colors = ["#FFD84D", "#35D05A", "#4DA3FF", "#FF4D4D", "#FF7AD9", "#FFFFFF"];
 
     const particles = [];
-    const count = 150;
+    const count = 160;
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
 
@@ -704,7 +714,7 @@
       video.src = "./Assets/Splash.mp4?v=" + Date.now();
       video.currentTime = 0;
 
-      video.muted = true; // iOS reliable start
+      video.muted = true;
       video.volume = 1.0;
 
       let endedAlready = false;
@@ -722,7 +732,6 @@
         video.style.display = "block";
         img.style.display = "none";
 
-        // try unmute after start (may still be blocked)
         try { video.muted = false; video.volume = 1.0; } catch (_) {}
 
         const ms = (Number.isFinite(video.duration) && video.duration > 0)

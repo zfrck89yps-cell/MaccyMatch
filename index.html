@@ -11,9 +11,10 @@
 
   <title>Maccy Match</title>
 
+  <!-- Kid-friendly font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -64,6 +65,7 @@
       animation: pulse 1.6s ease-in-out infinite;
       user-select: none;
       pointer-events: none;
+      font-family: "Baloo 2", system-ui, sans-serif;
     }
     @keyframes pulse {
       0% { transform: scale(1); opacity: .85; }
@@ -111,7 +113,6 @@
       padding: 32vh 42px 110px;
     }
 
-    /* This is the scroll container */
     .menuScroll {
       width: min(1100px, 92vw);
       height: 100%;
@@ -122,10 +123,8 @@
     }
     .menuScroll::-webkit-scrollbar { width: 0; height: 0; }
 
-    /* Spacer so last row isn’t hidden behind buttons */
     .menuScrollPad { height: 120px; }
 
-    /* 3 columns = 6 visible as 2 rows (depends on screen height, but tuned for iPad) */
     .menuGrid {
       width: 100%;
       display: grid;
@@ -135,7 +134,7 @@
     }
 
     .catCardBtn {
-      border: none;
+      border: 2px solid rgba(255,255,255,0.85);
       border-radius: 22px;
       padding: 0;
       background: rgba(255,255,255,0.20);
@@ -206,7 +205,7 @@
     }
 
     .gameCard {
-      border: none;
+      border: 2px solid rgba(255,255,255,0.85);
       border-radius: 22px;
       padding: 0;
       background: rgba(255,255,255,0.12);
@@ -231,9 +230,17 @@
     .gameCard.flipped .back { display: none; }
     .gameCard.flipped .front { display: block; }
 
-    .gameCard.selected {
-      outline: 6px solid rgba(255,255,255,0.85);
-      transform: scale(1.01);
+    .gameCard.selected{
+      outline: 6px solid rgba(255,255,255,0.95);
+      outline-offset: 2px;
+      animation: selPulse 0.9s ease-in-out infinite;
+      transform: scale(1.02);
+    }
+
+    @keyframes selPulse{
+      0%   { box-shadow: 0 0 0 rgba(255,255,255,0.0), 0 14px 30px rgba(0,0,0,0.22); }
+      50%  { box-shadow: 0 0 22px rgba(255,255,255,0.45), 0 18px 38px rgba(0,0,0,0.30); }
+      100% { box-shadow: 0 0 0 rgba(255,255,255,0.0), 0 14px 30px rgba(0,0,0,0.22); }
     }
 
     .gameCard.matched {
@@ -258,16 +265,25 @@
       user-select: none;
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
+      font-family: "Baloo 2", system-ui, sans-serif;
     }
     .backBtn:active { transform: scale(0.98); }
 
-    /* Match animation overlay */
-    .smashLayer {
+    /* ---------- MATCH ANIMATION OVERLAY ---------- */
+    .smashLayer{
       position: fixed;
       inset: 0;
       z-index: 9998;
       pointer-events: none;
     }
+
+    .smashDim{
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.10); /* very light dim */
+      opacity: 0;
+    }
+
     .smashClone {
       position: absolute;
       border-radius: 22px;
@@ -275,51 +291,47 @@
       box-shadow: 0 18px 40px rgba(0,0,0,0.35);
       will-change: transform, opacity;
       background: #fff;
+      border: 2px solid rgba(255,255,255,0.85);
     }
-.wordFlash {
-  position: fixed;
-  left: 50%;
-  top: 12%;
-  transform: translateX(-50%);
-  z-index: 10050;
 
-  font-family: "Baloo 2", "Comic Neue", "Arial Rounded MT Bold", system-ui, sans-serif;
-  font-size: clamp(56px, 8vw, 140px);
-  font-weight: 900;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+    .wordFlash{
+      position: fixed;
+      left: 50%;
+      top: 12%;
+      transform: translateX(-50%);
+      z-index: 10050;
 
-  color: #FFD23A;
+      font-family: "Baloo 2", system-ui, sans-serif;
+      font-size: clamp(64px, 9vw, 160px);
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
 
-  /* FAKE OUTLINE (stable, no glyph shifting) */
-  text-shadow:
-    /* outline ring */
-    -3px -3px 0 #5A2F00,
-     3px -3px 0 #5A2F00,
-    -3px  3px 0 #5A2F00,
-     3px  3px 0 #5A2F00,
+      color: #FFD23A;
 
-    /* depth */
-     0  6px 0 #3A1F00,
-     0 14px 26px rgba(0,0,0,0.55),
+      text-shadow:
+        -4px  0   0 #5A2F00,
+         4px  0   0 #5A2F00,
+         0   -4px 0 #5A2F00,
+         0    4px 0 #5A2F00,
+        -3px -3px 0 #5A2F00,
+         3px -3px 0 #5A2F00,
+        -3px  3px 0 #5A2F00,
+         3px  3px 0 #5A2F00,
+         0   10px 22px rgba(0,0,0,0.45),
+         0    0   18px rgba(255,210,60,0.85),
+         0    0   36px rgba(255,170,0,0.55);
 
-    /* glow */
-     0  0 18px rgba(255,210,60,0.9),
-     0  0 36px rgba(255,170,0,0.6);
+      opacity: 0;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
 
-  padding: 12px 26px;
-  border-radius: 22px;
-  background: rgba(0,0,0,0.35);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-
-  pointer-events: none;
-}
-    @keyframes popWord {
-      0%   { transform: translateX(-50%) scale(0.8); opacity: 0; }
-      10%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
-      90%  { transform: translateX(-50%) scale(1.00); opacity: 1; }
-      100% { transform: translateX(-50%) scale(0.98); opacity: 0; }
+    @keyframes popWord{
+      0%   { transform: translateX(-50%) scale(0.92); opacity: 0; }
+      12%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
+      88%  { transform: translateX(-50%) scale(1.00); opacity: 1; }
+      100% { transform: translateX(-50%) scale(0.99); opacity: 0; }
     }
 
     #confettiCanvas {
@@ -360,7 +372,7 @@
   <div id="app"></div>
   <canvas id="confettiCanvas"></canvas>
 
-  <!-- IMPORTANT: bump this v= when testing cache -->
-  <script src="./app.js?v=1000"></script>
+  <!-- IMPORTANT: bump v= when testing cache -->
+  <script src="./app.js?v=2000"></script>
 </body>
 </html>
