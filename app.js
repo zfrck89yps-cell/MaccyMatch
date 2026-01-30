@@ -434,8 +434,9 @@
   }
 
 function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-  const HOLD_MS = 1200;  // <-- change this for how long it stays
-  const FADE_MS = 250;   // <-- fade out speed
+  const HOLD_MS = 1200;
+const FADE_MS = 250;
+const CONFETTI_MS = 3000; // <-- 3 seconds
 
   let layer, dim, wf, cloneA, cloneB;
 
@@ -512,7 +513,7 @@ function flyTogetherAndBurst(cardA, cardB, word, onDone) {
     });
 
     // 8) Confetti for the full hold duration (3 sec if you want)
-    setTimeout(() => burstConfettiAndStars(HOLD_MS + FADE_MS), 360);
+    setTimeout(() => burstConfettiAndStars(HOLD_MS + FADE_MS), 10);
 
     // 9) Fade out everything
     setTimeout(() => {
