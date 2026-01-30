@@ -228,8 +228,6 @@
     // mode is "matchMenu" or "memoryMenu"
     lastMenu = mode;
 
-    document.querySelector(".backBtn")?.remove();
-
     const el = app();
     if (!el) return;
 
