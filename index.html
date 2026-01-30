@@ -281,29 +281,32 @@
     .backBtn:active { transform: scale(0.98); }
 
     /* ---------- MATCH ANIMATION OVERLAY ---------- */
-    .smashLayer{
-      position: fixed;
-      inset: 0;
-      z-index: 9998;
-      pointer-events: none;
-    }
+    /* Match animation overlay */
+.smashLayer{
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+}
 
-    .smashDim{
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.10); /* very light dim */
-      opacity: 0;
-    }
+/* The dim layer (very light) */
+.smashDim{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.01);  /* adjust: 0.08–0.18 */
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
 
-    .smashClone {
-      position: absolute;
-      border-radius: 22px;
-      overflow: hidden;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-      will-change: transform, opacity;
-      background: #fff;
-      border: 2px solid rgba(255,255,255,0.85);
-    }
+/* The flying clones */
+.smashClone {
+  position: absolute;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+  will-change: transform, opacity;
+  background: #fff;
+}
 
     .wordFlash{
       position: fixed;

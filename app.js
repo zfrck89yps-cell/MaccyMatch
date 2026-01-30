@@ -433,95 +433,104 @@
     return clone;
   }
 
-  function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-    const HOLD_MS = 1650;   // 3 seconds on screen
-    const FADE_MS = 200;
+function flyTogetherAndBurst(cardA, cardB, word, onDone) {
+  const HOLD_MS = 1200;  // <-- change this for how long it stays
+  const FADE_MS = 250;   // <-- fade out speed
 
-    let layer, dim, wf, cloneA, cloneB;
+  let layer, dim, wf, cloneA, cloneB;
 
-    const safeDone = () => {
-      try { wf?.remove(); } catch (_) {}
-      try { layer?.remove(); } catch (_) {}
-      onDone && onDone();
+  const safeDone = () => {
+    try { wf?.remove(); } catch (_) {}
+    try { layer?.remove(); } catch (_) {}
+    onDone && onDone();
+  };
+
+  try {
+    // 1) Overlay
+    layer = document.createElement("div");
+    layer.className = "smashLayer";
+    document.body.appendChild(layer);
+
+    // 2) Dim (fade in AFTER transition exists)
+    dim = document.createElement("div");
+    dim.className = "smashDim";
+    layer.appendChild(dim);
+
+    // Force paint, then fade in
+    requestAnimationFrame(() => {
+      dim.style.opacity = "1";
+    });
+
+    // 3) Clone positions
+    const rA = cardA.getBoundingClientRect();
+    const rB = cardB.getBoundingClientRect();
+
+    cloneA = makeClone(cardA, rA);
+    cloneB = makeClone(cardB, rB);
+    layer.appendChild(cloneA);
+    layer.appendChild(cloneB);
+
+    // 4) Word
+    wf = document.createElement("div");
+    wf.className = "wordFlash";
+    wf.textContent = word;
+    wf.style.animation = `popWord ${HOLD_MS + FADE_MS}ms ease-out forwards`;
+    document.body.appendChild(wf);
+
+    // 5) Calculate centre move
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+
+    const toCenterA = {
+      x: cx - (rA.left + rA.width / 2),
+      y: cy - (rA.top + rA.height / 2),
+    };
+    const toCenterB = {
+      x: cx - (rB.left + rB.width / 2),
+      y: cy - (rB.top + rB.height / 2),
     };
 
-    try {
-      layer = document.createElement("div");
-      layer.className = "smashLayer";
-      document.body.appendChild(layer);
+    // 6) Prep clone transitions
+    const prep = (el) => {
+      el.style.willChange = "transform, opacity";
+      el.style.transition = `transform 320ms cubic-bezier(.2,.9,.2,1), opacity ${FADE_MS}ms ease`;
+      el.style.transform = "translate(0px,0px) scale(1)";
+      el.style.opacity = "1";
+    };
 
-      dim = document.createElement("div");
-      dim.className = "smashDim";
-      layer.appendChild(dim);
+    prep(cloneA);
+    prep(cloneB);
 
-      requestAnimationFrame(() => { dim.style.opacity = "1"; });
+    // Force layout (Safari reliability)
+    cloneA.getBoundingClientRect();
+    cloneB.getBoundingClientRect();
 
-      const rA = cardA.getBoundingClientRect();
-      const rB = cardB.getBoundingClientRect();
+    // 7) Fly!
+    requestAnimationFrame(() => {
+      cloneA.style.transform = `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)`;
+      cloneB.style.transform = `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)`;
+    });
 
-      cloneA = makeClone(cardA, rA);
-      cloneB = makeClone(cardB, rB);
-      layer.appendChild(cloneA);
-      layer.appendChild(cloneB);
+    // 8) Confetti for the full hold duration (3 sec if you want)
+    setTimeout(() => burstConfettiAndStars(HOLD_MS + FADE_MS), 360);
 
-      wf = document.createElement("div");
-      wf.className = "wordFlash";
-      wf.textContent = word;
-      wf.style.animation = `popWord ${HOLD_MS + FADE_MS}ms ease-out forwards`;
-      document.body.appendChild(wf);
-
-      const cx = window.innerWidth / 2;
-      const cy = window.innerHeight / 2;
-
-      const toCenterA = {
-        x: cx - (rA.left + rA.width / 2),
-        y: cy - (rA.top + rA.height / 2),
-      };
-      const toCenterB = {
-        x: cx - (rB.left + rB.width / 2),
-        y: cy - (rB.top + rB.height / 2),
-      };
-
-      const flyOpts = {
-        duration: 340,
-        easing: "cubic-bezier(.2,.9,.2,1)",
-        fill: "forwards",
-      };
-
-      cloneA.animate(
-        [
-          { transform: "translate(0px,0px) scale(1)", opacity: 1 },
-          { transform: `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)`, opacity: 1 },
-        ],
-        flyOpts
-      );
-
-      cloneB.animate(
-        [
-          { transform: "translate(0px,0px) scale(1)", opacity: 1 },
-          { transform: `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)`, opacity: 1 },
-        ],
-        flyOpts
-      );
-
-      // Confetti runs for the full HOLD_MS
-      setTimeout(() => burstConfettiAndStars(HOLD_MS), 220);
-
-      // Fade out clones + dim
-      setTimeout(() => {
-        cloneA.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
-        cloneB.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, fill: "forwards" });
-        dim.style.transition = `opacity ${FADE_MS}ms ease`;
+    // 9) Fade out everything
+    setTimeout(() => {
+      try {
+        cloneA.style.opacity = "0";
+        cloneB.style.opacity = "0";
         dim.style.opacity = "0";
-      }, HOLD_MS);
+      } catch (_) {}
+    }, HOLD_MS);
 
-      setTimeout(safeDone, HOLD_MS + FADE_MS);
+    // 10) Cleanup
+    setTimeout(safeDone, HOLD_MS + FADE_MS);
 
-    } catch (err) {
-      console.error("flyTogetherAndBurst error:", err);
-      safeDone();
-    }
+  } catch (err) {
+    console.error("flyTogetherAndBurst error:", err);
+    safeDone();
   }
+}
 
   // ---------------- CONFETTI + STARS ----------------
   let raf = null;
