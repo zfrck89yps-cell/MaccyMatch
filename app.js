@@ -434,8 +434,8 @@
   }
 
   function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-    const HOLD_MS = 3000;   // 3 seconds on screen
-    const FADE_MS = 450;
+    const HOLD_MS = 2000;   // 3 seconds on screen
+    const FADE_MS = 400;
 
     let layer, dim, wf, cloneA, cloneB;
 
