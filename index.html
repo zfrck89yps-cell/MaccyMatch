@@ -17,6 +17,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
+
+/* Disable selection / callouts */
+html, body, #app {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Prevent accidental highlight */
+* {
+  -webkit-user-drag: none;
+}
+
+/* Allow vertical scrolling ONLY in menuScroll */
+.menuScroll {
+  touch-action: pan-y;
+}
+
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
       margin: 0; padding: 0;

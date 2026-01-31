@@ -732,6 +732,24 @@ if (progress > hold) {
     renderMenu("matchMenu");
     showApp();
 
+// Block context menus / text selection
+document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+// Block multi-touch gestures (pinch zoom)
+document.addEventListener("touchstart", (e) => {
+  if (e.touches && e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+
+document.addEventListener("touchmove", (e) => {
+  if (e.touches && e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+
+// iOS Safari gesture events (extra hardening)
+document.addEventListener("gesturestart", (e) => e.preventDefault());
+document.addEventListener("gesturechange", (e) => e.preventDefault());
+document.addEventListener("gestureend", (e) => e.preventDefault());
+
+
     const splash = document.getElementById("splash");
     const tapText = document.getElementById("tapText");
     const img = document.getElementById("splashImg");
