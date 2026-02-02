@@ -426,7 +426,7 @@
     }
   }
 
-const SELECT_SFX_VOLUME = 0.25; // quiet
+const SELECT_SFX_VOLUME = 0.1; // quiet
 const WIN_SFX_VOLUME = 0.6;    // louder than select
 
 function playSelectSfx() {
