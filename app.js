@@ -9,7 +9,6 @@
        - Category voice on pick
        - Card voice on match (delayed 1s)
        - Random praise on win (after win SFX)
-       - SFX: select / incorrect / win (cache-busted so updates actually load)
 */
 
 (() => {
@@ -378,7 +377,6 @@
   // SFX filenames (match Voice dr)
   const SFX_FILES = {
     select: "Select.mp3",
-    incorrect: "incorrect.mp3",
     win: "Win.mp3",
   };
 
@@ -398,7 +396,6 @@
   // SFX should be cache-busted when you swap files (iOS Safari especially)
   const sfxPool = {
     select: new Audio(),
-    incorrect: new Audio(),
     win: new Audio(),
   };
   let sfxBuster = 1;
@@ -408,7 +405,6 @@
   }
 
   function sfxUrl(fileName) {
-    // Cache-bust so replacing incorrect.mp3 actually updates on device
     sfxBuster += 1;
     return AUDIO_BASE + fileName + "?v=" + sfxBuster;
   }
@@ -430,23 +426,34 @@
     }
   }
 
-  async function playSfx(name) {
-    if (!settings.sfxOn) return;
-    const file = SFX_FILES[name];
-    if (!file) return;
+const SELECT_SFX_VOLUME = 0.25; // quiet
+const WIN_SFX_VOLUME = 0.6;    // louder than select
 
-    const a = sfxPool[name] || new Audio();
-    a.preload = "auto";
-    a.src = sfxUrl(file);
+function playSelectSfx() {
+  if (!settings?.sfxOn) return;
 
-    try {
-      a.pause();
-      a.currentTime = 0;
-      await a.play();
-    } catch (_) {
-      // ignore autoplay blocks / missing file
-    }
-  }
+  const audio = new Audio();
+  audio.preload = "auto";
+  audio.volume = SELECT_SFX_VOLUME;
+
+  // cache-bust to prevent old sounds ever replaying
+  audio.src = `./Assets/Sounds/Select.mp3?ts=${performance.now()}`;
+
+  audio.play().catch(() => {});
+}
+
+function playWinSfx() {
+  if (!settings?.sfxOn) return Promise.resolve();
+
+  const audio = new Audio();
+  audio.preload = "auto";
+  audio.volume = WIN_SFX_VOLUME;
+
+  audio.src = `./Assets/Sounds/Win.mp3?ts=${performance.now()}`;
+
+  return audio.play().catch(() => {});
+}
+
 
   async function playVoice(keyOrPhrase) {
     if (!settings.voiceOn) return;
@@ -629,7 +636,7 @@
         if (btn === first) return;
 
         // SFX: selecting a card
-        playSfx("select");
+playSelectSfx();
 
         if (mode === "memory") btn.classList.add("flipped");
         btn.classList.add("selected");
@@ -668,8 +675,8 @@
           });
 
         } else {
-          // SFX: incorrect pair
-          playSfx("incorrect");
+
+        
 
           setTimeout(() => {
             if (mode === "memory") {
@@ -690,7 +697,7 @@
     async function winSequence() {
       // Delay 1s then play win SFX (your request earlier)
       await sleep(1000);
-      await playSfx("win");
+await playWinSfx();
 
       // Then praise voice (random)
       const pick = PRAISE_CHOICES[(Math.random() * PRAISE_CHOICES.length) | 0];
