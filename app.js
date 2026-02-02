@@ -1,16 +1,54 @@
-
 /* app.js
-   - Match Menu + Memory Menu (toggle buttons)
-   - Menus show 6 category cards at a time (3x2) with vertical scrolling
-   - 8 cards (4 pairs) every round in both games
-   - Random 4-pair selection each round from chosen category
-   - Memory uses Cardback .PNG (face down)
-   - Win: plays Welldone .MP4 for ~6s then returns
-   - Match animation: fly together + dim + confetti (3s) + word flash
-   - Back button ONLY on game screens -> previous menu
+   - Keeps your current gameplay + animation
+   - Adds:
+     - Landscape lock overlay (if rotated portrait)
+     - Smaller responsive match/memory buttons
+     - Settings button bottom-right with toggles (Voice + SFX), persisted
+     - Audio:
+       - Category voice on pick
+       - Card voice on match
+       - Random praise on win
+       - SFX: select / incorrect / win
 */
 
 (() => {
+  function updateAutoScale() {
+  const root = document.documentElement;
+
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  // iOS safe-area insets if supported (fallback 0)
+  const cs = getComputedStyle(root);
+  const topSafe = cs.getPropertyValue("env(safe-area-inset-top)") || "0px";
+
+  // Choose a "design target" size (tweak these to your intended layout)
+  // Think: what size did you build it to look perfect on?
+  const DESIGN_W = 1024; // iPad landscape-ish
+  const DESIGN_H = 768;
+
+  // Scale based on whichever dimension is "tighter"
+  const scaleW = w / DESIGN_W;
+  const scaleH = h / DESIGN_H;
+
+  // Clamp so it doesn’t get huge on big screens or tiny on phones
+  let scale = Math.min(scaleW, scaleH);
+  scale = Math.max(0.72, Math.min(scale, 1.0)); // tweak min if needed
+
+  root.style.setProperty("--ui-scale", String(scale));
+
+  // safe area insets (set directly; iOS Safari will resolve env())
+  root.style.setProperty("--top-safe", "env(safe-area-inset-top, 0px)");
+  root.style.setProperty("--right-safe", "env(safe-area-inset-right, 0px)");
+  root.style.setProperty("--bottom-safe", "env(safe-area-inset-bottom, 0px)");
+  root.style.setProperty("--left-safe", "env(safe-area-inset-left, 0px)");
+}
+
+// Run it on load + whenever size changes
+window.addEventListener("load", updateAutoScale);
+window.addEventListener("resize", updateAutoScale);
+window.addEventListener("orientationchange", updateAutoScale);
+
   const ASSETS = {
     backgrounds: {
       matchMenu: "./Assets/Menu-background.png",
@@ -206,15 +244,253 @@
   ];
 
   const app = () => document.getElementById("app");
-  const canvas = () => document.getElementById("confettiCanvas");
 
   let lastMenu = "matchMenu";
+
+  // ---------------- SETTINGS (persisted) ----------------
+  const SETTINGS_KEY = "mm_settings_v1";
+  const settings = loadSettings();
+
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return {
+          voiceOn: parsed.voiceOn !== false,
+          sfxOn: parsed.sfxOn !== false,
+        };
+      }
+    } catch (_) {}
+    return { voiceOn: true, sfxOn: true };
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    } catch (_) {}
+  }
+
+  function ensureSettingsUI() {
+    if (document.getElementById("mmSettingsBtn")) return;
+
+    const btn = document.createElement("button");
+    btn.id = "mmSettingsBtn";
+    btn.className = "settingsBtn";
+    btn.type = "button";
+    btn.setAttribute("aria-label", "Settings");
+    btn.textContent = "⚙️";
+
+    const overlay = document.createElement("div");
+    overlay.id = "mmSettingsOverlay";
+    overlay.className = "settingsOverlay";
+    overlay.innerHTML = `
+      <div class="settingsPanel" role="dialog" aria-label="Settings">
+        <div class="settingsTop">
+          <div class="settingsTitle">Settings</div>
+          <button class="settingsClose" type="button" id="mmSettingsClose">✕</button>
+        </div>
+
+        <div class="toggleRow">
+          <div class="label">Voice</div>
+          <div class="switch" id="mmVoiceSwitch">
+            <div class="switchKnob"></div>
+          </div>
+        </div>
+
+        <div class="toggleRow" style="margin-bottom:0;">
+          <div class="label">Sound effects</div>
+          <div class="switch" id="mmSfxSwitch">
+            <div class="switchKnob"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(btn);
+    document.body.appendChild(overlay);
+
+    const close = () => { overlay.style.display = "none"; };
+    const open = () => { overlay.style.display = "flex"; };
+
+    btn.addEventListener("click", open);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
+    overlay.querySelector("#mmSettingsClose").addEventListener("click", close);
+
+    const voiceSwitch = overlay.querySelector("#mmVoiceSwitch");
+    const sfxSwitch = overlay.querySelector("#mmSfxSwitch");
+
+    const render = () => {
+      voiceSwitch.classList.toggle("on", !!settings.voiceOn);
+      sfxSwitch.classList.toggle("on", !!settings.sfxOn);
+    };
+
+    voiceSwitch.addEventListener("click", () => {
+      settings.voiceOn = !settings.voiceOn;
+      saveSettings();
+      render();
+    });
+
+    sfxSwitch.addEventListener("click", () => {
+      settings.sfxOn = !settings.sfxOn;
+      saveSettings();
+      render();
+    });
+
+    render();
+  }
+
+  // ---------------- LANDSCAPE LOCK OVERLAY ----------------
+  function ensureLandscapeLock() {
+    const el = document.getElementById("rotateLock");
+    if (!el) return;
+
+    const update = () => {
+      const portrait = window.innerHeight > window.innerWidth;
+      el.style.display = portrait ? "flex" : "none";
+    };
+
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+  }
+
+  // ---------------- AUDIO ----------------
+  // Your screenshot shows /assets/Voice/ on disk.
+  // If your repo uses /Assets/Voice/ instead, change these two.
+ const AUDIO_BASE_CANDIDATES = [
+  "./Assets/Sounds/",
+];
+
+
+  // Keys in code -> filename base (without extension)
+  const VOICE_ALIASES = {
+    // categories are already ids: animals/body/etc -> animals.wav etc
+
+    // numbers (code uses "1".."10", files are one.wav etc)
+    "1": "one",
+    "2": "two",
+    "3": "three",
+    "4": "four",
+    "5": "five",
+    "6": "six",
+    "7": "seven",
+    "8": "eight",
+    "9": "nine",
+    "10": "ten",
+
+    // mismatches seen in your folder screenshot
+    bucketspade: "bucket_and_spade",
+    policecar: "police_car",
+    fireengine: "fire_engine",
+    tshirt: "t-shirt",
+    crisp: "crisps", // you have crisps.wav
+    "great job": "great_job", // sometimes underscore
+  };
+
+  // SFX filenames (in your screenshot these are mp3)
+  const SFX_FILES = {
+    select: "Select.mp3",
+    incorrect: "incorrect.mp3",
+    win: "Win.mp3",
+  };
+
+  // Praise choices on win (you have these as wav in screenshot)
+  const PRAISE_CHOICES = [
+    "well_done",
+    "amazing",
+    "great_job",     // also supports "great job" fallback in playVoice()
+    "brilliant",
+  ];
+
+  // Reuse audio elements so iOS Safari behaves better
+  const audioPool = new Map(); // url -> Audio()
+
+  function pickAudioUrl(fileName) {
+    // Try both base folders; we can’t reliably “probe” sync, so we just build
+    // with the first base by default. If you need the other base, swap order above.
+    return AUDIO_BASE_CANDIDATES[0] + fileName;
+  }
+
+  function getAudio(url) {
+    if (audioPool.has(url)) return audioPool.get(url);
+    const a = new Audio(url);
+    a.preload = "auto";
+    audioPool.set(url, a);
+    return a;
+  }
+
+  function stopAllAudio() {
+    for (const a of audioPool.values()) {
+      try { a.pause(); a.currentTime = 0; } catch (_) {}
+    }
+  }
+
+  async function playSfx(name) {
+    if (!settings.sfxOn) return;
+    const file = SFX_FILES[name];
+    if (!file) return;
+
+    const url = pickAudioUrl(file);
+    const a = getAudio(url);
+
+    try {
+      a.pause();
+      a.currentTime = 0;
+      await a.play();
+    } catch (_) {
+      // ignore autoplay blocks / missing file
+    }
+  }
+
+  async function playVoice(keyOrPhrase) {
+    if (!settings.voiceOn) return;
+
+    // Normalise key -> alias
+    const raw = String(keyOrPhrase).trim().toLowerCase();
+
+    // Try a few candidates (underscores/spaces) to match your real filenames
+    const alias = VOICE_ALIASES[raw] || raw;
+
+    const candidates = [
+      `${alias}.wav`,
+      `${alias}.mp3`,
+      `${raw}.wav`,
+      `${raw}.mp3`,
+      `${raw.replace(/\s+/g, "_")}.wav`,
+      `${raw.replace(/\s+/g, "_")}.mp3`,
+    ];
+
+    // Use the first candidate path (if a file is missing, it’ll just fail silently)
+    // If you want strict checking later, we can add a lightweight fetch() probe.
+    const url = pickAudioUrl(candidates[0]);
+    const a = getAudio(url);
+
+    try {
+      a.pause();
+      a.currentTime = 0;
+      await a.play();
+    } catch (_) {
+      // If the first candidate fails due to missing/format, try a couple more quickly
+      for (let i = 1; i < Math.min(4, candidates.length); i++) {
+        try {
+          const u2 = pickAudioUrl(candidates[i]);
+          const a2 = getAudio(u2);
+          a2.pause();
+          a2.currentTime = 0;
+          await a2.play();
+          break;
+        } catch (_) {}
+      }
+    }
+  }
 
   // ---------------- MENUS ----------------
   function renderMenu(mode) {
     lastMenu = mode;
 
-    // IMPORTANT: remove back button when on menus
     removeBackButton();
 
     const el = app();
@@ -254,9 +530,13 @@
 
     // click category -> start game with chosen mode
     el.querySelectorAll(".catCardBtn[data-cat]").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const category = btn.getAttribute("data-cat");
         const gameMode = (mode === "matchMenu") ? "match" : "memory";
+
+        // Voice: say category when picked
+        await playVoice(category);
+
         startGame({ mode: gameMode, category });
       });
     });
@@ -271,6 +551,7 @@
     btn.className = "backBtn";
     btn.textContent = "← Back";
     btn.addEventListener("click", () => {
+      stopAllAudio();
       if (lastMenu === "memoryMenu") renderMenu("memoryMenu");
       else renderMenu("matchMenu");
     });
@@ -343,16 +624,17 @@
     }
 
     grid.querySelectorAll(".gameCard").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         if (locked) return;
         if (btn.classList.contains("matched")) return;
         if (btn === first) return;
 
-        // selection style
+        // SFX: selecting a card
+        playSfx("select");
+
         if (mode === "memory") btn.classList.add("flipped");
         btn.classList.add("selected");
 
-        // clear previous "selected" if first pick exists and you tap another first? (we don't)
         if (!first) {
           first = btn;
           return;
@@ -365,9 +647,14 @@
         const k2 = second.dataset.key;
 
         if (k1 === k2) {
-          const word = String(first.dataset.word || k1).toUpperCase();
+          const wordKey = String(first.dataset.word || k1);
+          const wordFlashText = wordKey.toUpperCase();
 
-          flyTogetherAndBurst(first, second, word, () => {
+          // Voice: say the card word on match
+          // (play while animation is happening)
+          playVoice(wordKey);
+
+          flyTogetherAndBurst(first, second, wordFlashText, () => {
             first.classList.add("matched");
             second.classList.add("matched");
 
@@ -383,6 +670,9 @@
           });
 
         } else {
+          // SFX: incorrect pair
+          playSfx("incorrect");
+
           setTimeout(() => {
             if (mode === "memory") {
               first.classList.remove("flipped");
@@ -399,10 +689,17 @@
       });
     });
 
-    function winSequence() {
+    async function winSequence() {
+      // SFX: win before praise voice
+      await playSfx("win");
+
+      // Random praise voice (then show video)
+      const pick = PRAISE_CHOICES[(Math.random() * PRAISE_CHOICES.length) | 0];
+      playVoice(pick);
+
       showWinVideo(() => {
         removeBackButton();
-        renderMenu(lastMenu); // return to where you came from
+        renderMenu(lastMenu);
       });
     }
   }
@@ -433,248 +730,211 @@
     return clone;
   }
 
-function flyTogetherAndBurst(cardA, cardB, word, onDone) {
-  const HOLD_MS = 1200;
-const FADE_MS = 250;
-const CONFETTI_MS = 3000; // <-- 3 seconds
+  function flyTogetherAndBurst(cardA, cardB, word, onDone) {
+    const HOLD_MS = 1200;
+    const FADE_MS = 250;
 
-  let layer, dim, wf, cloneA, cloneB;
+    let layer, dim, wf, cloneA, cloneB;
 
-  const safeDone = () => {
-    try { wf?.remove(); } catch (_) {}
-    try { layer?.remove(); } catch (_) {}
-    onDone && onDone();
-  };
-
-  try {
-    // 1) Overlay
-    layer = document.createElement("div");
-    layer.className = "smashLayer";
-    document.body.appendChild(layer);
-
-    // 2) Dim (fade in AFTER transition exists)
-    dim = document.createElement("div");
-    dim.className = "smashDim";
-    layer.appendChild(dim);
-
-    // Force paint, then fade in
-    requestAnimationFrame(() => {
-      dim.style.opacity = "1";
-    });
-
-    // 3) Clone positions
-    const rA = cardA.getBoundingClientRect();
-    const rB = cardB.getBoundingClientRect();
-
-    cloneA = makeClone(cardA, rA);
-    cloneB = makeClone(cardB, rB);
-    layer.appendChild(cloneA);
-    layer.appendChild(cloneB);
-
-    // 4) Word
-    wf = document.createElement("div");
-    wf.className = "wordFlash";
-    wf.textContent = word;
-    wf.style.animation = `popWord ${HOLD_MS + FADE_MS}ms ease-out forwards`;
-    document.body.appendChild(wf);
-
-    // 5) Calculate centre move
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-
-    const toCenterA = {
-      x: cx - (rA.left + rA.width / 2),
-      y: cy - (rA.top + rA.height / 2),
-    };
-    const toCenterB = {
-      x: cx - (rB.left + rB.width / 2),
-      y: cy - (rB.top + rB.height / 2),
+    const safeDone = () => {
+      try { wf?.remove(); } catch (_) {}
+      try { layer?.remove(); } catch (_) {}
+      onDone && onDone();
     };
 
-    // 6) Prep clone transitions
-    const prep = (el) => {
-      el.style.willChange = "transform, opacity";
-      el.style.transition = `transform 320ms cubic-bezier(.2,.9,.2,1), opacity ${FADE_MS}ms ease`;
-      el.style.transform = "translate(0px,0px) scale(1)";
-      el.style.opacity = "1";
-    };
+    try {
+      layer = document.createElement("div");
+      layer.className = "smashLayer";
+      document.body.appendChild(layer);
 
-    prep(cloneA);
-    prep(cloneB);
+      dim = document.createElement("div");
+      dim.className = "smashDim";
+      layer.appendChild(dim);
 
-    // Force layout (Safari reliability)
-    cloneA.getBoundingClientRect();
-    cloneB.getBoundingClientRect();
+      requestAnimationFrame(() => { dim.style.opacity = "1"; });
 
-    // 7) Fly!
-    requestAnimationFrame(() => {
-      cloneA.style.transform = `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)`;
-      cloneB.style.transform = `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)`;
-    });
+      const rA = cardA.getBoundingClientRect();
+      const rB = cardB.getBoundingClientRect();
 
-    // 8) Confetti for the full hold duration (3 sec if you want)
-    setTimeout(() => burstConfettiAndStars(HOLD_MS + FADE_MS), 10);
+      cloneA = makeClone(cardA, rA);
+      cloneB = makeClone(cardB, rB);
+      layer.appendChild(cloneA);
+      layer.appendChild(cloneB);
 
-    // 9) Fade out everything
-    setTimeout(() => {
-      try {
-        cloneA.style.opacity = "0";
-        cloneB.style.opacity = "0";
-        dim.style.opacity = "0";
-      } catch (_) {}
-    }, HOLD_MS);
+      wf = document.createElement("div");
+      wf.className = "wordFlash";
+      wf.textContent = word;
+      wf.style.animation = `popWord ${HOLD_MS + FADE_MS}ms ease-out forwards`;
+      document.body.appendChild(wf);
 
-    // 10) Cleanup
-    setTimeout(safeDone, HOLD_MS + FADE_MS);
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
 
-  } catch (err) {
-    console.error("flyTogetherAndBurst error:", err);
-    safeDone();
+      const toCenterA = {
+        x: cx - (rA.left + rA.width / 2),
+        y: cy - (rA.top + rA.height / 2),
+      };
+      const toCenterB = {
+        x: cx - (rB.left + rB.width / 2),
+        y: cy - (rB.top + rB.height / 2),
+      };
+
+      const prep = (el) => {
+        el.style.willChange = "transform, opacity";
+        el.style.transition = `transform 320ms cubic-bezier(.2,.9,.2,1), opacity ${FADE_MS}ms ease`;
+        el.style.transform = "translate(0px,0px) scale(1)";
+        el.style.opacity = "1";
+      };
+
+      prep(cloneA);
+      prep(cloneB);
+
+      cloneA.getBoundingClientRect();
+      cloneB.getBoundingClientRect();
+
+      requestAnimationFrame(() => {
+        cloneA.style.transform = `translate(${toCenterA.x}px,${toCenterA.y}px) scale(1.08)`;
+        cloneB.style.transform = `translate(${toCenterB.x}px,${toCenterB.y}px) scale(1.08)`;
+      });
+
+      setTimeout(() => burstConfettiAndStars(HOLD_MS + FADE_MS), 10);
+
+      setTimeout(() => {
+        try {
+          cloneA.style.opacity = "0";
+          cloneB.style.opacity = "0";
+          dim.style.opacity = "0";
+        } catch (_) {}
+      }, HOLD_MS);
+
+      setTimeout(safeDone, HOLD_MS + FADE_MS);
+
+    } catch (err) {
+      console.error("flyTogetherAndBurst error:", err);
+      safeDone();
+    }
   }
-}
 
   // ---------------- CONFETTI + STARS ----------------
-let raf = null;
+  let raf = null;
 
-function burstConfettiAndStars(durationMs = 3000) {
-  const c = document.getElementById("confettiCanvas");
-  if (!c) return;
+  function burstConfettiAndStars(durationMs = 3000) {
+    const c = document.getElementById("confettiCanvas");
+    if (!c) return;
 
-  const ctx = c.getContext("2d");
-  const dpr = window.devicePixelRatio || 1;
+    const ctx = c.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
 
-  function resize() {
-    c.width = Math.floor(window.innerWidth * dpr);
-    c.height = Math.floor(window.innerHeight * dpr);
-    c.style.width = window.innerWidth + "px";
-    c.style.height = window.innerHeight + "px";
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  resize();
-
-  const start = performance.now();
-
-  // ✅ Bright, non-pastel, valid colors (no weird symbols)
-  const colors = [
-    "#FFCC00", // bright gold
-    "#00D14A", // vivid green
-    "#007BFF", // strong blue
-    "#FF2D2D", // punchy red
-    "#FF2BC2", // hot pink
-    "#FFFFFF"  // white pop
-  ];
-
-  const particles = [];
-  const count = 240;
-
-  const centerX = window.innerWidth / 2;
-  const centerY = window.innerHeight / 2;
-
-  for (let i = 0; i < count; i++) {
-    const isStar = Math.random() < 0.35;
-    const angle = Math.random() * Math.PI * 2;
-
-    // bigger + bolder movement
-    const speed = 3 + Math.random() * 8;
-
-    particles.push({
-      x: centerX + (Math.random() - 0.5) * 30,
-      y: centerY + (Math.random() - 0.5) * 30,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - (2 + Math.random() * 3),
-      rot: Math.random() * Math.PI * 2,
-      vrot: (Math.random() - 0.5) * 0.35,
-
-      // ✅ bigger pieces
-      size: isStar ? (10 + Math.random() * 18) : (8 + Math.random() * 14),
-
-      isStar,
-      color: colors[(Math.random() * colors.length) | 0],
-    });
-  }
-
-  function drawStar(x, y, r, rot) {
-    const spikes = 5;
-    const outerRadius = r;
-    const innerRadius = r * 0.45;
-
-    ctx.beginPath();
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rot);
-
-    let rotA = Math.PI / 2 * 3;
-    const step = Math.PI / spikes;
-
-    ctx.moveTo(0, -outerRadius);
-    for (let i = 0; i < spikes; i++) {
-      ctx.lineTo(Math.cos(rotA) * outerRadius, Math.sin(rotA) * outerRadius);
-      rotA += step;
-      ctx.lineTo(Math.cos(rotA) * innerRadius, Math.sin(rotA) * innerRadius);
-      rotA += step;
+    function resize() {
+      c.width = Math.floor(window.innerWidth * dpr);
+      c.height = Math.floor(window.innerHeight * dpr);
+      c.style.width = window.innerWidth + "px";
+      c.style.height = window.innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-    ctx.closePath();
+    resize();
 
-    ctx.restore();
-    ctx.fill();
-  }
+    const start = performance.now();
 
-  function frame(t) {
-    const elapsed = t - start;
+    const colors = ["#FFCC00", "#00D14A", "#007BFF", "#FF2D2D", "#FF2BC2", "#FFFFFF"];
+    const particles = [];
+    const count = 240;
 
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
 
-    // ✅ slower fade (holds brightness longer, then fades)
-    const progress = Math.min(1, elapsed / durationMs);
+    for (let i = 0; i < count; i++) {
+      const isStar = Math.random() < 0.35;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 3 + Math.random() * 8;
 
-// Hold at full brightness for 70% of the time, then fade in the last 30%
-const hold = 0.70;
+      particles.push({
+        x: centerX + (Math.random() - 0.5) * 30,
+        y: centerY + (Math.random() - 0.5) * 30,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - (2 + Math.random() * 3),
+        rot: Math.random() * Math.PI * 2,
+        vrot: (Math.random() - 0.5) * 0.35,
+        size: isStar ? (10 + Math.random() * 18) : (8 + Math.random() * 14),
+        isStar,
+        color: colors[(Math.random() * colors.length) | 0],
+      });
+    }
 
-let fade = 1;
-if (progress > hold) {
-  const p = (progress - hold) / (1 - hold); // 0 → 1
-  fade = 1 - (p * p); // smooth fade
-}
+    function drawStar(x, y, r, rot) {
+      const spikes = 5;
+      const outerRadius = r;
+      const innerRadius = r * 0.45;
 
-    for (const p of particles) {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.12; // gravity
-      p.rot += p.vrot;
+      ctx.beginPath();
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
 
-      ctx.globalAlpha = Math.max(0, fade);
+      let rotA = Math.PI / 2 * 3;
+      const step = Math.PI / spikes;
 
-      // ✅ THIS is the line you were missing
-      ctx.fillStyle = p.color;
+      ctx.moveTo(0, -outerRadius);
+      for (let i = 0; i < spikes; i++) {
+        ctx.lineTo(Math.cos(rotA) * outerRadius, Math.sin(rotA) * outerRadius);
+        rotA += step;
+        ctx.lineTo(Math.cos(rotA) * innerRadius, Math.sin(rotA) * innerRadius);
+        rotA += step;
+      }
+      ctx.closePath();
 
-      if (p.isStar) {
-        drawStar(p.x, p.y, p.size * 0.5, p.rot);
+      ctx.restore();
+      ctx.fill();
+    }
+
+    function frame(t) {
+      const elapsed = t - start;
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      const progress = Math.min(1, elapsed / durationMs);
+      const hold = 0.70;
+
+      let fade = 1;
+      if (progress > hold) {
+        const p = (progress - hold) / (1 - hold);
+        fade = 1 - (p * p);
+      }
+
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.12;
+        p.rot += p.vrot;
+
+        ctx.globalAlpha = Math.max(0, fade);
+        ctx.fillStyle = p.color;
+
+        if (p.isStar) {
+          drawStar(p.x, p.y, p.size * 0.5, p.rot);
+        } else {
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillRect(-p.size, -p.size / 2, p.size * 2, p.size);
+          ctx.restore();
+        }
+      }
+
+      ctx.globalAlpha = 1;
+
+      if (elapsed < durationMs) {
+        raf = requestAnimationFrame(frame);
       } else {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        // bigger rectangles
-        ctx.fillRect(-p.size, -p.size / 2, p.size * 2, p.size);
-        ctx.restore();
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        raf = null;
       }
     }
 
-    ctx.globalAlpha = 1;
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(frame);
 
-    if (elapsed < durationMs) {
-      raf = requestAnimationFrame(frame);
-    } else {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      raf = null;
-    }
+    window.addEventListener("resize", resize, { once: true });
   }
-
-  if (raf) cancelAnimationFrame(raf);
-  raf = requestAnimationFrame(frame);
-
-  // Optional: keep it responsive if they rotate iPad mid-confetti
-  window.addEventListener("resize", resize, { once: true });
-}
 
   // ---------------- WIN VIDEO ----------------
   function showWinVideo(onDone) {
@@ -729,26 +989,28 @@ if (progress > hold) {
 
   // ---------------- STARTUP (splash flow) ----------------
   window.addEventListener("load", () => {
+    ensureSettingsUI();
+    ensureLandscapeLock();
+
     renderMenu("matchMenu");
     showApp();
 
-// Block context menus / text selection
-document.addEventListener("contextmenu", (e) => e.preventDefault());
+    // Block context menus / text selection
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-// Block multi-touch gestures (pinch zoom)
-document.addEventListener("touchstart", (e) => {
-  if (e.touches && e.touches.length > 1) e.preventDefault();
-}, { passive: false });
+    // Block multi-touch gestures (pinch zoom)
+    document.addEventListener("touchstart", (e) => {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
 
-document.addEventListener("touchmove", (e) => {
-  if (e.touches && e.touches.length > 1) e.preventDefault();
-}, { passive: false });
+    document.addEventListener("touchmove", (e) => {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
 
-// iOS Safari gesture events (extra hardening)
-document.addEventListener("gesturestart", (e) => e.preventDefault());
-document.addEventListener("gesturechange", (e) => e.preventDefault());
-document.addEventListener("gestureend", (e) => e.preventDefault());
-
+    // iOS Safari gesture events (extra hardening)
+    document.addEventListener("gesturestart", (e) => e.preventDefault());
+    document.addEventListener("gesturechange", (e) => e.preventDefault());
+    document.addEventListener("gestureend", (e) => e.preventDefault());
 
     const splash = document.getElementById("splash");
     const tapText = document.getElementById("tapText");

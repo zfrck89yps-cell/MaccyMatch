@@ -2,50 +2,125 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  />
 
-  <link rel="apple-touch-icon" href="/Assets/apple-touch-icon.png">
+  <title>Maccy Match</title>
+
+  <!-- iOS / PWA -->
+  <meta name="theme-color" content="#FFD84D">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Maccy Match">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#FFD84D">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-  
-  <title>Maccy Match</title>
+  <!-- IMPORTANT:
+       Your repo screenshot shows manifest.webmanifest.
+       Use a RELATIVE path (works on GitHub Pages + local). -->
+  <link rel="manifest" href="./manifest.webmanifest?v=1">
+
+  <!-- Home screen icons (iOS mainly uses apple-touch-icon) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="./Assets/apple-touch-icon.png?v=1">
+  <link rel="icon" type="image/png" sizes="192x192" href="./Assets/icon-192.png?v=1">
+  <link rel="icon" type="image/png" sizes="512x512" href="./Assets/icon-512.png?v=1">
 
   <!-- Kid-friendly font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
 
   <style>
-
-/* Disable selection / callouts */
-html, body, #app {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
+    :root{
+  --ui-scale: 1;
+  --pad: 16px;
+  --top-safe: 0px;
+  --right-safe: 0px;
+  --bottom-safe: 0px;
+  --left-safe: 0px;
 }
 
-/* Prevent accidental highlight */
-* {
-  -webkit-user-drag: none;
+/* Use safe-area insets (iPhone notch etc) */
+body{
+  padding-top: var(--top-safe);
+  padding-right: var(--right-safe);
+  padding-bottom: var(--bottom-safe);
+  padding-left: var(--left-safe);
 }
 
-/* Allow vertical scrolling ONLY in menuScroll */
-.menuScroll {
-  touch-action: pan-y;
+/* Wrap everything inside app in a scaling layer */
+#appScale {
+  position: absolute;
+  inset: 0;
+  transform: scale(var(--ui-scale));
+  transform-origin: top left;
 }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* IMPORTANT: scaled content shrinks, so we must expand its “virtual” size
+   so it still fills the screen after scaling */
+#appScaleInner {
+  width: calc(100% / var(--ui-scale));
+  height: calc(100% / var(--ui-scale));
+  position: relative;
+}
+
+
+    /* Disable selection / callouts */
+    html, body, #app {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    /* Prevent accidental highlight */
+    * { -webkit-user-drag: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    /* Allow vertical scrolling ONLY in menuScroll */
+    .menuScroll { touch-action: pan-y; }
+
     html, body {
       margin: 0; padding: 0;
       width: 100%; height: 100%;
       overflow: hidden;
       background: #000;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* ---------- PORTRAIT LOCK OVERLAY ---------- */
+    #rotateLock {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      color: #FFD84D;
+      font-family: "Baloo 2", system-ui, sans-serif;
+      text-align: center;
+      padding: 24px;
+    }
+    #rotateLock .box {
+      max-width: 520px;
+      background: rgba(255, 216, 77, 0.10);
+      border: 2px solid rgba(255,216,77,0.35);
+      border-radius: 22px;
+      padding: 22px 20px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+    }
+    #rotateLock .big {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 900;
+      margin-bottom: 10px;
+      text-shadow: 0 6px 16px rgba(0,0,0,0.45);
+    }
+    #rotateLock .small {
+      font-size: clamp(16px, 2.6vw, 22px);
+      color: rgba(255,255,255,0.92);
+      font-weight: 700;
     }
 
     /* ---------- SPLASH ---------- */
@@ -132,7 +207,12 @@ html, body, #app {
       inset: 0;
       display: flex;
       justify-content: center;
-      padding: 32vh 42px 110px;
+
+      /* iPhone / small iPad safety */
+      padding:
+        clamp(160px, 28vh, 320px)
+        clamp(16px, 4vw, 42px)
+        110px;
     }
 
     .menuScroll {
@@ -175,7 +255,7 @@ html, body, #app {
       display: block;
     }
 
-    /* ---------- MENU TOGGLE BUTTONS ---------- */
+    /* ---------- MENU TOGGLE BUTTONS (smaller + responsive) ---------- */
     .toggleBtn {
       position: fixed;
       border: none;
@@ -188,19 +268,15 @@ html, body, #app {
     }
     .toggleBtn:active { transform: scale(0.98); }
 
-    .memoryBtn {
-  right: 0;
-  top: 0;
-  width: 300px;
-  height: 300px;
-}
+    /* Shrinks on small iPads/iPhone automatically */
+    .memoryBtn, .matchBtn {
+      top: 0;
+      width: clamp(140px, 18vw, 260px);
+      height: clamp(140px, 18vw, 260px);
+    }
 
-   .matchBtn {
-  left: 0;
-  top: 0;
-  width: 300px;
-  height: 300px;
-}
+    .memoryBtn { right: 0; }
+    .matchBtn { left: 0; }
 
     .toggleBtn img {
       width: 100%;
@@ -215,7 +291,11 @@ html, body, #app {
       inset: 0;
       display: flex;
       justify-content: center;
-      padding: 22vh 42px 120px;
+
+      padding:
+        clamp(140px, 22vh, 260px)
+        clamp(16px, 4vw, 42px)
+        120px;
     }
 
     .gameGrid {
@@ -253,27 +333,19 @@ html, body, #app {
     .gameCard.flipped .front { display: block; }
 
     .gameCard.selected {
-  transform: scale(1.06);
-  z-index: 5;
+      transform: scale(1.06);
+      z-index: 5;
+      box-shadow:
+        0 0 0 6px #ffffff,
+        0 0 0 18px #FFD23A,
+        0 18px 40px rgba(0,0,0,0.45);
+      animation: selectedPulse 0.9s ease-in-out infinite;
+    }
 
-  box-shadow:
-    0 0 0 6px #ffffff,          /* thick white ring */
-    0 0 0 18px #FFD23A,          /* bold gold ring */
-    0 18px 40px rgba(0,0,0,0.45);
-
-  animation: selectedPulse 0.9s ease-in-out infinite;
-}
-
-@keyframes selectedPulse {
-  0%   { transform: scale(1.05); }
-  50%  { transform: scale(1.08); }
-  100% { transform: scale(1.05); }
-}
-
-    @keyframes selPulse{
-      0%   { box-shadow: 0 0 0 rgba(255,255,255,0.0), 0 14px 30px rgba(0,0,0,0.22); }
-      50%  { box-shadow: 0 0 22px rgba(255,255,255,0.45), 0 18px 38px rgba(0,0,0,0.30); }
-      100% { box-shadow: 0 0 0 rgba(255,255,255,0.0), 0 14px 30px rgba(0,0,0,0.22); }
+    @keyframes selectedPulse {
+      0%   { transform: scale(1.05); }
+      50%  { transform: scale(1.08); }
+      100% { transform: scale(1.05); }
     }
 
     .gameCard.matched {
@@ -302,79 +374,170 @@ html, body, #app {
     }
     .backBtn:active { transform: scale(0.98); }
 
-   /* ---------- MATCH ANIMATION OVERLAY (FULL BLOCK) ---------- */
+    /* ---------- SETTINGS BUTTON + POPUP ---------- */
+    .settingsBtn {
+      position: fixed;
+      z-index: 99999;
+      right: calc(env(safe-area-inset-right, 0px) + 10px);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,0.65);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+    }
+    .settingsBtn:active { transform: scale(0.97); }
 
-/* Overlay container that holds haze + flying clones */
-.smashLayer{
-  position: fixed;
-  inset: 0;
-  z-index: 10030;          /* above confetti, below word */
-  pointer-events: none;
-}
+    .settingsOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 14px;
+    }
 
-/* The “white haze” behind the clones */
-.smashDim{
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.50); /* tweak: 0.12–0.28 */
-  opacity: 0;
-  transition: opacity 180ms ease;
-  z-index: 1;
-}
+    .settingsPanel {
+      width: min(320px, 92vw);
+      background: rgba(20,20,20,0.92);
+      border: 2px solid rgba(255,255,255,0.18);
+      border-radius: 18px;
+      padding: 14px 14px 10px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+      font-family: "Baloo 2", system-ui, sans-serif;
+      color: #fff;
+    }
 
-/* The flying cloned cards */
-.smashClone{
-  position: absolute;
-  border-radius: 22px;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-  will-change: transform, opacity;
-  z-index: 2;
-}
+    .settingsTop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .settingsTitle {
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: 0.3px;
+    }
+    .settingsClose {
+      border: none;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-weight: 900;
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+    .settingsClose:active { transform: scale(0.98); }
 
-/* The big word popup */
-.wordFlash{
-  position: fixed;
-  left: 50%;
-  top: 12%;
-  transform: translateX(-50%);
-  z-index: 10050; /* always top */
+    .toggleRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 8px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      margin-bottom: 10px;
+    }
+    .toggleRow .label {
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .switch {
+      width: 54px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      position: relative;
+      cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.12);
+      flex: 0 0 auto;
+    }
+    .switchKnob {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: #fff;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 3px;
+      transition: left 160ms ease;
+    }
+    .switch.on { background: rgba(255,210,58,0.55); }
+    .switch.on .switchKnob { left: 27px; }
 
-  font-family: "Baloo 2", system-ui, sans-serif;
-  font-size: clamp(64px, 9vw, 160px);
-  font-weight: 900;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+    /* ---------- MATCH ANIMATION OVERLAY ---------- */
+    .smashLayer{
+      position: fixed;
+      inset: 0;
+      z-index: 10030;
+      pointer-events: none;
+    }
+    .smashDim{
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.50);
+      opacity: 0;
+      transition: opacity 180ms ease;
+      z-index: 1;
+    }
+    .smashClone{
+      position: absolute;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+      will-change: transform, opacity;
+      z-index: 2;
+    }
 
-  color: #FFD23A;
+    .wordFlash{
+      position: fixed;
+      left: 50%;
+      top: 12%;
+      transform: translateX(-50%);
+      z-index: 10050;
+      font-family: "Baloo 2", system-ui, sans-serif;
+      font-size: clamp(64px, 9vw, 160px);
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #FFD23A;
+      text-shadow:
+        -4px  0   0 #5A2F00,
+         4px  0   0 #5A2F00,
+         0   -4px 0 #5A2F00,
+         0    4px 0 #5A2F00,
+        -3px -3px 0 #5A2F00,
+         3px -3px 0 #5A2F00,
+        -3px  3px 0 #5A2F00,
+         3px  3px 0 #5A2F00,
+         0   10px 22px rgba(0,0,0,0.45),
+         0    0   18px rgba(255,210,60,0.85),
+         0    0   36px rgba(255,170,0,0.55);
+      opacity: 0;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
 
-  /* stable outline + depth + glow */
-  text-shadow:
-    -4px  0   0 #5A2F00,
-     4px  0   0 #5A2F00,
-     0   -4px 0 #5A2F00,
-     0    4px 0 #5A2F00,
-    -3px -3px 0 #5A2F00,
-     3px -3px 0 #5A2F00,
-    -3px  3px 0 #5A2F00,
-     3px  3px 0 #5A2F00,
-     0   10px 22px rgba(0,0,0,0.45),
-     0    0   18px rgba(255,210,60,0.85),
-     0    0   36px rgba(255,170,0,0.55);
-
-  opacity: 0;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-
-/* Animation used by JS: wf.style.animation = `popWord ...` */
-@keyframes popWord{
-  0%   { transform: translateX(-50%) scale(0.92); opacity: 0; }
-  12%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
-  88%  { transform: translateX(-50%) scale(1.00); opacity: 1; }
-  100% { transform: translateX(-50%) scale(0.99); opacity: 0; }
-}
+    @keyframes popWord{
+      0%   { transform: translateX(-50%) scale(0.92); opacity: 0; }
+      12%  { transform: translateX(-50%) scale(1.05); opacity: 1; }
+      88%  { transform: translateX(-50%) scale(1.00); opacity: 1; }
+      100% { transform: translateX(-50%) scale(0.99); opacity: 0; }
+    }
 
     #confettiCanvas {
       position: fixed;
@@ -397,10 +560,26 @@ html, body, #app {
       height: 100%;
       object-fit: cover;
     }
+
+    /* ---------- RESPONSIVE TWEAKS ---------- */
+    @media (max-width: 820px) {
+      .menuGrid { grid-template-columns: repeat(2, 1fr); }
+      .gameGrid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 520px) {
+      .gameGrid { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
 
 <body>
+  <div id="rotateLock">
+    <div class="box">
+      <div class="big">Rotate your iPad</div>
+      <div class="small">This game works in landscape.</div>
+    </div>
+  </div>
+
   <div id="splash" role="button" aria-label="Tap to start">
     <img id="splashImg" src="./Assets/Splash.PNG?v=99" alt="Maccy Match">
     <video id="splashVideo"
@@ -411,10 +590,13 @@ html, body, #app {
     <div id="tapText">Tap to Start</div>
   </div>
 
-  <div id="app"></div>
+<div id="appScale">
+  <div id="appScaleInner">
+    <div id="app"></div>
+  </div>
+</div>
   <canvas id="confettiCanvas"></canvas>
 
-  <!-- IMPORTANT: bump v= when testing cache -->
-  <script src="./app.js?v=2000"></script>
+  <script src="./app.js?v=3000"></script>
 </body>
 </html>
