@@ -350,12 +350,9 @@
   }
 
   // ---------------- AUDIO ----------------
-  // Your current repo uses: MaccyMatch/Assets/Sounds/ (per Voice dr)
   const AUDIO_BASE = "./Assets/Sounds/";
 
-  // Keys in code -> filename base (without extension)
   const VOICE_ALIASES = {
-    // numbers: code keys are "1".."10", files are one.wav etc
     "1": "one",
     "2": "two",
     "3": "three",
@@ -366,34 +363,28 @@
     "8": "eight",
     "9": "nine",
     "10": "ten",
-
-    // common key mismatches in your assets
     bucketspade: "bucket_and_spade",
     policecar: "police_car",
     fireengine: "fire_engine",
     crisp: "crisps",
   };
 
-  // SFX filenames (match Voice dr)
   const SFX_FILES = {
     select: "Select.mp3",
     win: "Win.mp3",
   };
 
-  // Praise choices (match your actual filenames)
   const PRAISE_CHOICES = [
     "welldone",
     "amazing",
     "brilliant",
     "fantastic",
     "excellent",
-    "great job", // you have "great job.wav" (space) in Voice dr
+    "great job",
   ];
 
-  // Voice audio pool can be cached
-  const voicePool = new Map(); // url -> Audio()
+  const voicePool = new Map();
 
-  // SFX should be cache-busted when you swap files (iOS Safari especially)
   const sfxPool = {
     select: new Audio(),
     win: new Audio(),
@@ -426,34 +417,28 @@
     }
   }
 
-const SELECT_SFX_VOLUME = 0.1; // quiet
-const WIN_SFX_VOLUME = 0.6;    // louder than select
+  const SELECT_SFX_VOLUME = 0.1; // quiet
+  const WIN_SFX_VOLUME = 0.6;    // louder than select
 
-function playSelectSfx() {
-  if (!settings?.sfxOn) return;
+  function playSelectSfx() {
+    if (!settings?.sfxOn) return;
 
-  const audio = new Audio();
-  audio.preload = "auto";
-  audio.volume = SELECT_SFX_VOLUME;
+    const audio = new Audio();
+    audio.preload = "auto";
+    audio.volume = SELECT_SFX_VOLUME;
+    audio.src = `./Assets/Sounds/Select.mp3?ts=${performance.now()}`;
+    audio.play().catch(() => {});
+  }
 
-  // cache-bust to prevent old sounds ever replaying
-  audio.src = `./Assets/Sounds/Select.mp3?ts=${performance.now()}`;
+  function playWinSfx() {
+    if (!settings?.sfxOn) return Promise.resolve();
 
-  audio.play().catch(() => {});
-}
-
-function playWinSfx() {
-  if (!settings?.sfxOn) return Promise.resolve();
-
-  const audio = new Audio();
-  audio.preload = "auto";
-  audio.volume = WIN_SFX_VOLUME;
-
-  audio.src = `./Assets/Sounds/Win.mp3?ts=${performance.now()}`;
-
-  return audio.play().catch(() => {});
-}
-
+    const audio = new Audio();
+    audio.preload = "auto";
+    audio.volume = WIN_SFX_VOLUME;
+    audio.src = `./Assets/Sounds/Win.mp3?ts=${performance.now()}`;
+    return audio.play().catch(() => {});
+  }
 
   async function playVoice(keyOrPhrase) {
     if (!settings.voiceOn) return;
@@ -461,10 +446,6 @@ function playWinSfx() {
     const raw = String(keyOrPhrase).trim().toLowerCase();
     const alias = VOICE_ALIASES[raw] || raw;
 
-    // Build a wide set of candidate filenames based on your actual folder:
-    // - space version (great job.wav)
-    // - underscore version (great_job.wav) if you ever switch
-    // - hyphen files (t-shirt.wav)
     const rawUnderscore = raw.replace(/\s+/g, "_");
     const aliasUnderscore = alias.replace(/\s+/g, "_");
 
@@ -479,7 +460,6 @@ function playWinSfx() {
       `${rawUnderscore}.mp3`,
     ];
 
-    // Try each candidate until one plays
     for (let i = 0; i < candidates.length; i++) {
       const url = voiceUrl(candidates[i]);
       const a = getVoiceAudio(url);
@@ -489,9 +469,7 @@ function playWinSfx() {
         a.currentTime = 0;
         await a.play();
         return;
-      } catch (_) {
-        // try next
-      }
+      } catch (_) {}
     }
   }
 
@@ -539,10 +517,7 @@ function playWinSfx() {
       btn.addEventListener("click", async () => {
         const category = btn.getAttribute("data-cat");
         const gameMode = (mode === "matchMenu") ? "match" : "memory";
-
-        // Voice: say category when picked
         await playVoice(category);
-
         startGame({ mode: gameMode, category });
       });
     });
@@ -636,16 +611,18 @@ function playWinSfx() {
         if (btn === first) return;
 
         // SFX: selecting a card
-playSelectSfx();
+        playSelectSfx();
 
         if (mode === "memory") btn.classList.add("flipped");
-        btn.classList.add("selected");
 
+        // ✅ FIX: only FIRST pick gets the pulsing border
         if (!first) {
+          btn.classList.add("selected");
           first = btn;
           return;
         }
 
+        // second pick: do NOT add .selected
         second = btn;
         locked = true;
 
@@ -656,7 +633,7 @@ playSelectSfx();
           const wordKey = String(first.dataset.word || k1);
           const wordFlashText = wordKey.toUpperCase();
 
-          // DELAY the spoken word by 1s (your request earlier)
+          // DELAY the spoken word by 1s
           setTimeout(() => { playVoice(wordKey); }, 1000);
 
           flyTogetherAndBurst(first, second, wordFlashText, () => {
@@ -675,15 +652,16 @@ playSelectSfx();
           });
 
         } else {
-
-        
+          // ✅ FIX: incorrect match = first stops pulsing immediately
+          first.classList.remove("selected");
 
           setTimeout(() => {
             if (mode === "memory") {
               first.classList.remove("flipped");
               second.classList.remove("flipped");
             }
-            first.classList.remove("selected");
+
+            // safety clean
             second.classList.remove("selected");
 
             first = null;
@@ -694,23 +672,20 @@ playSelectSfx();
       });
     });
 
-  async function winSequence() {
-  // everything stays the same up to here
-  await sleep(1000);        // your existing delay (keep if you had it)
-  playWinSfx();             // win sound overlays video as before
+    async function winSequence() {
+      await sleep(1000);
+      playWinSfx();
 
-  // ONLY CHANGE: delay praise by 1 second
-  setTimeout(() => {
-    const pick = PRAISE_CHOICES[(Math.random() * PRAISE_CHOICES.length) | 0];
-    playVoice(pick);
-  }, 1500);
+      setTimeout(() => {
+        const pick = PRAISE_CHOICES[(Math.random() * PRAISE_CHOICES.length) | 0];
+        playVoice(pick);
+      }, 1500);
 
-  // MP4 behaviour unchanged
-  showWinVideo(() => {
-    removeBackButton();
-    renderMenu(lastMenu);
-  });
-}
+      showWinVideo(() => {
+        removeBackButton();
+        renderMenu(lastMenu);
+      });
+    }
   }
 
   function getPool(category) {
