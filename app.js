@@ -1,53 +1,47 @@
 /* app.js
    - Keeps your current gameplay + animation
-   - Adds:
-     - Landscape lock overlay (if rotated portrait)
+   - Includes:
+     - Auto scale (PC browser + iPad + iPhone)
+     - Landscape lock overlay
      - Smaller responsive match/memory buttons
      - Settings button bottom-right with toggles (Voice + SFX), persisted
      - Audio:
        - Category voice on pick
-       - Card voice on match
-       - Random praise on win
-       - SFX: select / incorrect / win
+       - Card voice on match (delayed 1s)
+       - Random praise on win (after win SFX)
+       - SFX: select / incorrect / win (cache-busted so updates actually load)
 */
 
 (() => {
+  // ---------------- AUTO SCALE ----------------
   function updateAutoScale() {
-  const root = document.documentElement;
+    const root = document.documentElement;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
 
-  const w = window.innerWidth;
-  const h = window.innerHeight;
+    // Design target (tweak if you want)
+    const DESIGN_W = 1024;
+    const DESIGN_H = 768;
 
-  // iOS safe-area insets if supported (fallback 0)
-  const cs = getComputedStyle(root);
-  const topSafe = cs.getPropertyValue("env(safe-area-inset-top)") || "0px";
+    const scaleW = w / DESIGN_W;
+    const scaleH = h / DESIGN_H;
 
-  // Choose a "design target" size (tweak these to your intended layout)
-  // Think: what size did you build it to look perfect on?
-  const DESIGN_W = 1024; // iPad landscape-ish
-  const DESIGN_H = 768;
+    // Clamp
+    let scale = Math.min(scaleW, scaleH);
+    scale = Math.max(0.72, Math.min(scale, 1.0));
 
-  // Scale based on whichever dimension is "tighter"
-  const scaleW = w / DESIGN_W;
-  const scaleH = h / DESIGN_H;
+    root.style.setProperty("--ui-scale", String(scale));
+    root.style.setProperty("--top-safe", "env(safe-area-inset-top, 0px)");
+    root.style.setProperty("--right-safe", "env(safe-area-inset-right, 0px)");
+    root.style.setProperty("--bottom-safe", "env(safe-area-inset-bottom, 0px)");
+    root.style.setProperty("--left-safe", "env(safe-area-inset-left, 0px)");
+  }
 
-  // Clamp so it doesn’t get huge on big screens or tiny on phones
-  let scale = Math.min(scaleW, scaleH);
-  scale = Math.max(0.72, Math.min(scale, 1.0)); // tweak min if needed
+  window.addEventListener("load", updateAutoScale);
+  window.addEventListener("resize", updateAutoScale);
+  window.addEventListener("orientationchange", updateAutoScale);
 
-  root.style.setProperty("--ui-scale", String(scale));
-
-  // safe area insets (set directly; iOS Safari will resolve env())
-  root.style.setProperty("--top-safe", "env(safe-area-inset-top, 0px)");
-  root.style.setProperty("--right-safe", "env(safe-area-inset-right, 0px)");
-  root.style.setProperty("--bottom-safe", "env(safe-area-inset-bottom, 0px)");
-  root.style.setProperty("--left-safe", "env(safe-area-inset-left, 0px)");
-}
-
-// Run it on load + whenever size changes
-window.addEventListener("load", updateAutoScale);
-window.addEventListener("resize", updateAutoScale);
-window.addEventListener("orientationchange", updateAutoScale);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const ASSETS = {
     backgrounds: {
@@ -244,7 +238,6 @@ window.addEventListener("orientationchange", updateAutoScale);
   ];
 
   const app = () => document.getElementById("app");
-
   let lastMenu = "matchMenu";
 
   // ---------------- SETTINGS (persisted) ----------------
@@ -358,18 +351,12 @@ window.addEventListener("orientationchange", updateAutoScale);
   }
 
   // ---------------- AUDIO ----------------
-  // Your screenshot shows /assets/Voice/ on disk.
-  // If your repo uses /Assets/Voice/ instead, change these two.
- const AUDIO_BASE_CANDIDATES = [
-  "./Assets/Sounds/",
-];
-
+  // Your current repo uses: MaccyMatch/Assets/Sounds/ (per Voice dr)
+  const AUDIO_BASE = "./Assets/Sounds/";
 
   // Keys in code -> filename base (without extension)
   const VOICE_ALIASES = {
-    // categories are already ids: animals/body/etc -> animals.wav etc
-
-    // numbers (code uses "1".."10", files are one.wav etc)
+    // numbers: code keys are "1".."10", files are one.wav etc
     "1": "one",
     "2": "two",
     "3": "three",
@@ -381,50 +368,65 @@ window.addEventListener("orientationchange", updateAutoScale);
     "9": "nine",
     "10": "ten",
 
-    // mismatches seen in your folder screenshot
+    // common key mismatches in your assets
     bucketspade: "bucket_and_spade",
     policecar: "police_car",
     fireengine: "fire_engine",
-    tshirt: "t-shirt",
-    crisp: "crisps", // you have crisps.wav
-    "great job": "great_job", // sometimes underscore
+    crisp: "crisps",
   };
 
-  // SFX filenames (in your screenshot these are mp3)
+  // SFX filenames (match Voice dr)
   const SFX_FILES = {
     select: "Select.mp3",
     incorrect: "incorrect.mp3",
     win: "Win.mp3",
   };
 
-  // Praise choices on win (you have these as wav in screenshot)
+  // Praise choices (match your actual filenames)
   const PRAISE_CHOICES = [
-    "well_done",
+    "welldone",
     "amazing",
-    "great_job",     // also supports "great job" fallback in playVoice()
     "brilliant",
+    "fantastic",
+    "excellent",
+    "great job", // you have "great job.wav" (space) in Voice dr
   ];
 
-  // Reuse audio elements so iOS Safari behaves better
-  const audioPool = new Map(); // url -> Audio()
+  // Voice audio pool can be cached
+  const voicePool = new Map(); // url -> Audio()
 
-  function pickAudioUrl(fileName) {
-    // Try both base folders; we can’t reliably “probe” sync, so we just build
-    // with the first base by default. If you need the other base, swap order above.
-    return AUDIO_BASE_CANDIDATES[0] + fileName;
+  // SFX should be cache-busted when you swap files (iOS Safari especially)
+  const sfxPool = {
+    select: new Audio(),
+    incorrect: new Audio(),
+    win: new Audio(),
+  };
+  let sfxBuster = 1;
+
+  function voiceUrl(fileName) {
+    return AUDIO_BASE + fileName;
   }
 
-  function getAudio(url) {
-    if (audioPool.has(url)) return audioPool.get(url);
+  function sfxUrl(fileName) {
+    // Cache-bust so replacing incorrect.mp3 actually updates on device
+    sfxBuster += 1;
+    return AUDIO_BASE + fileName + "?v=" + sfxBuster;
+  }
+
+  function getVoiceAudio(url) {
+    if (voicePool.has(url)) return voicePool.get(url);
     const a = new Audio(url);
     a.preload = "auto";
-    audioPool.set(url, a);
+    voicePool.set(url, a);
     return a;
   }
 
   function stopAllAudio() {
-    for (const a of audioPool.values()) {
+    for (const a of voicePool.values()) {
       try { a.pause(); a.currentTime = 0; } catch (_) {}
+    }
+    for (const k of Object.keys(sfxPool)) {
+      try { sfxPool[k].pause(); sfxPool[k].currentTime = 0; } catch (_) {}
     }
   }
 
@@ -433,8 +435,9 @@ window.addEventListener("orientationchange", updateAutoScale);
     const file = SFX_FILES[name];
     if (!file) return;
 
-    const url = pickAudioUrl(file);
-    const a = getAudio(url);
+    const a = sfxPool[name] || new Audio();
+    a.preload = "auto";
+    a.src = sfxUrl(file);
 
     try {
       a.pause();
@@ -448,41 +451,39 @@ window.addEventListener("orientationchange", updateAutoScale);
   async function playVoice(keyOrPhrase) {
     if (!settings.voiceOn) return;
 
-    // Normalise key -> alias
     const raw = String(keyOrPhrase).trim().toLowerCase();
-
-    // Try a few candidates (underscores/spaces) to match your real filenames
     const alias = VOICE_ALIASES[raw] || raw;
+
+    // Build a wide set of candidate filenames based on your actual folder:
+    // - space version (great job.wav)
+    // - underscore version (great_job.wav) if you ever switch
+    // - hyphen files (t-shirt.wav)
+    const rawUnderscore = raw.replace(/\s+/g, "_");
+    const aliasUnderscore = alias.replace(/\s+/g, "_");
 
     const candidates = [
       `${alias}.wav`,
       `${alias}.mp3`,
+      `${aliasUnderscore}.wav`,
+      `${aliasUnderscore}.mp3`,
       `${raw}.wav`,
       `${raw}.mp3`,
-      `${raw.replace(/\s+/g, "_")}.wav`,
-      `${raw.replace(/\s+/g, "_")}.mp3`,
+      `${rawUnderscore}.wav`,
+      `${rawUnderscore}.mp3`,
     ];
 
-    // Use the first candidate path (if a file is missing, it’ll just fail silently)
-    // If you want strict checking later, we can add a lightweight fetch() probe.
-    const url = pickAudioUrl(candidates[0]);
-    const a = getAudio(url);
+    // Try each candidate until one plays
+    for (let i = 0; i < candidates.length; i++) {
+      const url = voiceUrl(candidates[i]);
+      const a = getVoiceAudio(url);
 
-    try {
-      a.pause();
-      a.currentTime = 0;
-      await a.play();
-    } catch (_) {
-      // If the first candidate fails due to missing/format, try a couple more quickly
-      for (let i = 1; i < Math.min(4, candidates.length); i++) {
-        try {
-          const u2 = pickAudioUrl(candidates[i]);
-          const a2 = getAudio(u2);
-          a2.pause();
-          a2.currentTime = 0;
-          await a2.play();
-          break;
-        } catch (_) {}
+      try {
+        a.pause();
+        a.currentTime = 0;
+        await a.play();
+        return;
+      } catch (_) {
+        // try next
       }
     }
   }
@@ -490,7 +491,6 @@ window.addEventListener("orientationchange", updateAutoScale);
   // ---------------- MENUS ----------------
   function renderMenu(mode) {
     lastMenu = mode;
-
     removeBackButton();
 
     const el = app();
@@ -528,7 +528,6 @@ window.addEventListener("orientationchange", updateAutoScale);
       }
     `;
 
-    // click category -> start game with chosen mode
     el.querySelectorAll(".catCardBtn[data-cat]").forEach(btn => {
       btn.addEventListener("click", async () => {
         const category = btn.getAttribute("data-cat");
@@ -650,9 +649,8 @@ window.addEventListener("orientationchange", updateAutoScale);
           const wordKey = String(first.dataset.word || k1);
           const wordFlashText = wordKey.toUpperCase();
 
-          // Voice: say the card word on match
-          // (play while animation is happening)
-          playVoice(wordKey);
+          // DELAY the spoken word by 1s (your request earlier)
+          setTimeout(() => { playVoice(wordKey); }, 1000);
 
           flyTogetherAndBurst(first, second, wordFlashText, () => {
             first.classList.add("matched");
@@ -690,11 +688,13 @@ window.addEventListener("orientationchange", updateAutoScale);
     });
 
     async function winSequence() {
-      // SFX: win before praise voice
+      // Delay 1s then play win SFX (your request earlier)
+      await sleep(1000);
       await playSfx("win");
 
-      // Random praise voice (then show video)
+      // Then praise voice (random)
       const pick = PRAISE_CHOICES[(Math.random() * PRAISE_CHOICES.length) | 0];
+      await sleep(200);
       playVoice(pick);
 
       showWinVideo(() => {
@@ -995,10 +995,8 @@ window.addEventListener("orientationchange", updateAutoScale);
     renderMenu("matchMenu");
     showApp();
 
-    // Block context menus / text selection
     document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-    // Block multi-touch gestures (pinch zoom)
     document.addEventListener("touchstart", (e) => {
       if (e.touches && e.touches.length > 1) e.preventDefault();
     }, { passive: false });
@@ -1007,7 +1005,6 @@ window.addEventListener("orientationchange", updateAutoScale);
       if (e.touches && e.touches.length > 1) e.preventDefault();
     }, { passive: false });
 
-    // iOS Safari gesture events (extra hardening)
     document.addEventListener("gesturestart", (e) => e.preventDefault());
     document.addEventListener("gesturechange", (e) => e.preventDefault());
     document.addEventListener("gestureend", (e) => e.preventDefault());
