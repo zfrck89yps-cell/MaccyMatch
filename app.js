@@ -694,21 +694,23 @@ playSelectSfx();
       });
     });
 
-    async function winSequence() {
-      // Delay 1s then play win SFX (your request earlier)
-      await sleep(1000);
-await playWinSfx();
+  async function winSequence() {
+  // everything stays the same up to here
+  await sleep(1000);        // your existing delay (keep if you had it)
+  playWinSfx();             // win sound overlays video as before
 
-      // Then praise voice (random)
-      const pick = PRAISE_CHOICES[(Math.random() * PRAISE_CHOICES.length) | 0];
-      await sleep(200);
-      playVoice(pick);
+  // ONLY CHANGE: delay praise by 1 second
+  setTimeout(() => {
+    const pick = PRAISE_CHOICES[(Math.random() * PRAISE_CHOICES.length) | 0];
+    playVoice(pick);
+  }, 1500);
 
-      showWinVideo(() => {
-        removeBackButton();
-        renderMenu(lastMenu);
-      });
-    }
+  // MP4 behaviour unchanged
+  showWinVideo(() => {
+    removeBackButton();
+    renderMenu(lastMenu);
+  });
+}
   }
 
   function getPool(category) {
