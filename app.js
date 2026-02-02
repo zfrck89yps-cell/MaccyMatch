@@ -634,7 +634,7 @@
           const wordFlashText = wordKey.toUpperCase();
 
           // DELAY the spoken word by 1s
-          setTimeout(() => { playVoice(wordKey); }, 400);
+          setTimeout(() => { playVoice(wordKey); }, 200);
 
           flyTogetherAndBurst(first, second, wordFlashText, () => {
             first.classList.add("matched");
